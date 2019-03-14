@@ -1,0 +1,24 @@
+STK
+    Documentation:
+        http://www.music.mcgill.ca/caml/lib/exe/fetch.php?media=publications:icmc99_stk.pdf
+
+FFT
+    https://dlbeer.co.nz/articles/fftvis.html
+    https://stackoverflow.com/questions/4675457/how-to-generate-the-audio-spectrum-using-fft-in-c
+
+    How the algorithm works
+        https://www.youtube.com/watch?v=htCj9exbGo0
+        https://www.youtube.com/watch?v=EsJGuI7e_ZQ
+        C++ implementation
+            https://www.geeksforgeeks.org/fast-fourier-transformation-poynomial-multiplication/
+            http://www.drdobbs.com/cpp/a-simple-and-efficient-fft-implementatio/199500857
+
+    Frequency bins
+        https://dsp.stackexchange.com/questions/26927/what-is-a-frequency-bin
+        https://www.mathworks.com/matlabcentral/answers/322142-what-are-frequency-bins
+
+Visualization on Arduino (possibly?)
+    https://dsp.stackexchange.com/questions/14615/how-to-make-this-cool-audio-spectrum-visualizer
+
+Someone's already working visualizer:
+    https://www.youtube.com/watch?v=LqUuMqfW1PE
