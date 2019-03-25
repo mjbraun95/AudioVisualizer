@@ -34,7 +34,7 @@ int main(){
   //open a file and put it's info into a struct "SoundFileInfo"
 
   printf("channels: ");
-  printf(SoundFilePtr.channels);
+  printf(SoundFileInfo.channels);
   printf("\n");
   double *Samples = malloc(SoundFileInfo.channels * SoundFileInfo.frames + 1);
   printf("debug5\n");
