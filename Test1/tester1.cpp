@@ -29,7 +29,7 @@ create_file (const char * fname, int format)
 
 	SndfileHandle file ;
 	int channels = 2 ;
-	int srate = 48000 ;
+	int srate = 44100 ;
 
 	printf ("Creating file named '%s'\n", fname) ;
 
@@ -69,7 +69,7 @@ read_file (const char * fname)
 
 int
 main (void)
-{	const char * fname = "test.wav" ;
+{	const char * fname = "ass.wav" ;
 
 	puts ("\nSimple example showing usage of the C++ SndfileHandle object.\n") ;
 

@@ -29,7 +29,7 @@ int main(){
    //     } SF_INFO ;
 
   // /media/sf_CMPUT_275/Assignments/CMPUT275_Final_Project/Test1/
-  SoundFile = sf_open("test.wav", SFM_READ, SoundFilePtr);
+  SoundFile = sf_open("ass2.wav", SFM_READ, SoundFilePtr);
   printf("debug4\n");
   //open a file and put it's info into a struct "SoundFileInfo"
 
