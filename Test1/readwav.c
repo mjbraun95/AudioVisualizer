@@ -36,7 +36,7 @@ int main(){
   printf("channels: ");
   printf(SoundFileInfo.channels);
   printf("\n");
-  double *Samples = malloc(SoundFileInfo.channels * SoundFileInfo.frames + 1);
+  double *Samples = malloc(SoundFileInfo.channels * SoundFileInfo.frames);
   printf("debug5\n");
   //allocate an array to hold the samples
  
