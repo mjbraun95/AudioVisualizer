@@ -64,6 +64,9 @@ private:
     int sample_rate;
     // determines the # of frequency bins collected in a time period
     double time_unit;
+    // the interpreted FFT algorithm could only handle the vector
+    // with the size of 2 ^ m for m > 0
+    int FFT_size = 2048;
 };
 
 // ***** PUBLIC METHODS FIRST *****
@@ -209,22 +212,19 @@ void audio_file::decode(double** data, unsigned long* size) {
 }
 
 vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) {
-    // the interpreted FFT algorithm could only handle the vector
-    // with the size of 2 ^ m for m > 0
-    int FFT_size = pow(2.0, (int) (log(this->sample_rate) / log(2)));
-    // e.g. if FFT_size = 32768 & this->sample_rate = 44100, then time_unit would be 0.74 s
-    this->time_unit = (double) FFT_size / (double) this->sample_rate;
+    // e.g. if FFT_size = 2048 & this->sample_rate = 44100, then time_unit would be 0.046 s
+    this->time_unit = (double) this->FFT_size / (double) this->sample_rate;
     // the audio duration (in time_unit)
-    int duration = *size / FFT_size;
+    int duration = *size / this->FFT_size;
 
     // store vectors contain the frequency bins for each time unit
-    vector<vector<double>> f_bins_collection(duration, vector<double> (FFT_size, 0));
+    vector<vector<double>> f_bins_collection(duration, vector<double> (this->FFT_size / 2, 0));
     for (int i = 0; i < duration; i++) {
         // feed the data storing the audio info for one time unit
         // into the vector of complex number
         vector<complex<double>> sample;
-        for (int j = 0; j < FFT_size; j++) {
-            sample.push_back((*data)[i * FFT_size + j]);
+        for (int j = 0; j < this->FFT_size; j++) {
+            sample.push_back((*data)[i * this->FFT_size + j]);
         }
 
         window(sample);
@@ -235,6 +235,10 @@ vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) 
         for (auto iter : sample) {
             f_bins_collection[i][k] = abs(iter);
             k += 1;
+            // the useful index range for frequency is from 1 to N/2
+            if (k >= this->FFT_size / 2) {
+                break;
+            }
         }
     }
     
