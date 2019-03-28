@@ -16,5 +16,6 @@ int main()
     }
     cout << f_bins_collection[5].size() << endl;
     cout << f_bins_collection.size() << endl;
+    cout << input_file.get_time_unit() << endl;
     return 0;
 }

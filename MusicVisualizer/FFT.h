@@ -9,6 +9,19 @@
 using namespace std;
 
 /*
+     applying the Hann function to the discrete time signals
+     to prevent spectral leakage
+*/
+void window(vector<complex<double>> &sample){
+    int N = sample.size();
+
+    for (int i = 0; i < N; i++) {
+        double w_n = 0.5 * (1 - cos(2 * M_PI * i / (N - 1)));
+        sample[i] *= w_n;
+    }
+}
+
+/*
     interpretation of Fast Fourier transform using Cooley-Tukey Algorithms
     build upon the pseudo code retrieved form:
         http://people.scs.carleton.ca/~maheshwa/courses/5703COMP/16Fall/FFT_Report.pdf

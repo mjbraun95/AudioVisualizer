@@ -53,10 +53,16 @@ public:
     // by calling f_bins_collection[3]
     vector<vector<double>> f_domain(double** data, unsigned long* size);
 
+    // return the time unit
+    // which determines the # of frequency bins collected in a time period
+    double get_time_unit() {
+        return this->time_unit;
+    }
+
 private:
     const char* file_name;
     int sample_rate;
-    // determine the # of frequency bins collected in a time period
+    // determines the # of frequency bins collected in a time period
     double time_unit;
 };
 
@@ -190,10 +196,6 @@ void audio_file::decode(double** data, unsigned long* size) {
         av_free_packet(&packet);
     }
 
-    // for (int i = 0; i  < *size; i++) {
-    //     cout << (*data)[i] << endl;
-    // }
-
     cout << "The size of the decoded & re-sampled audio data: " << *size << endl;
 
     av_frame_free(&frame);
@@ -213,7 +215,7 @@ vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) 
     // e.g. if FFT_size = 32768 & this->sample_rate = 44100, then time_unit would be 0.74 s
     this->time_unit = (double) FFT_size / (double) this->sample_rate;
     // the audio duration (in time_unit)
-    int duration = (int) *size / FFT_size;
+    int duration = *size / FFT_size;
 
     // store vectors contain the frequency bins for each time unit
     vector<vector<double>> f_bins_collection(duration, vector<double> (FFT_size, 0));
@@ -225,6 +227,7 @@ vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) 
             sample.push_back((*data)[i * FFT_size + j]);
         }
 
+        window(sample);
         FFT(sample);
 
         // store the magnitude of each complex number
