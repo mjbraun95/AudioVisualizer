@@ -12,7 +12,7 @@ using namespace std;
     interpretation of Fast Fourier transform using Cooley-Tukey Algorithms
     build upon the pseudo code retrieved form:
         http://people.scs.carleton.ca/~maheshwa/courses/5703COMP/16Fall/FFT_Report.pdf
-        (notice that the exponential term should be e ^ -2 * PI * i/N rather than e ^ 2 * PI * i/N)
+        (notice that the exponential term should be e ^ (-2 * PI * i/N) rather than e ^ (2 * PI * i/N))
 
     sample: An array of complex values [which has a size of 2 ^ m for m > 0]
 

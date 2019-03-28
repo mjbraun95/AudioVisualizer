@@ -1,6 +1,7 @@
 #ifndef _AUDIO_FILE_H_
 #define _AUDIO_FILE_H_
 
+#include <cmath>
 #include <complex>
 #include <iostream>
 #include <stdlib.h>
@@ -45,8 +46,12 @@ public:
     // size: size of the data
     void decode(double** data, unsigned long* size);
 
-    // transform the data in to frequency domain
-    vector<complex<double>> f_domain(double** data, unsigned long* size);
+    // transform the data to frequency domain
+    // return the two dimensional vector
+    // containing the transformed frequency bins at time t (in second)
+    // e.g. the frequency bins at time 0:03 could be retrieved
+    // by calling f_bins_collection[3]
+    vector<vector<double>> f_domain(double** data, unsigned long* size);
 
 private:
     const char* file_name;
@@ -199,19 +204,37 @@ void audio_file::decode(double** data, unsigned long* size) {
     avformat_free_context(formatCtx);
 }
 
-vector<complex<double>> audio_file::f_domain(double** data, unsigned long* size) {
-    // // store the frequency bins for each second
-    // vector<vector<complex<double>>> f_bins;
-    // store the data into the vector of complex number
-    vector<complex<double>> sample(this->sample_rate, 0);
-    for (int i = 0; i < this->sample_rate; i++) {
-        sample[i] = complex<double> ((*data)[i], 0);
+vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) {
+    // the audio duration (in second)
+    int duration = (int) *size / this->sample_rate;
+    // the interpreted FFT algorithm could only handle the vector
+    // with the size of 2 ^ m for m > 0
+    int FFT_size = pow(2.0, (int) (log(this->sample_rate) / log(2)));
+
+    // store vectors contain the frequency bins for each second
+    vector<vector<double>> f_bins_collection(duration, vector<double> (FFT_size, 0));
+    for (int i = 0; i < duration; i++) {
+        // feed the data storing the audio info for one second
+        // into the vector of complex number
+        vector<complex<double>> sample;
+        for (int j = 0; j < FFT_size; j++) {
+            // since FFT_size < this->sample_rate
+            // only extract the middle part of the audio info
+            sample.push_back((*data)[i * this->sample_rate
+                + (this->sample_rate - FFT_size)/2 + j]);
+        }
+
+        FFT(sample);
+
+        // store the magnitude of each complex number
+        int k = 0;
+        for (auto iter : sample) {
+            f_bins_collection[i][k] = abs(iter);
+            k += 1;
+        }
     }
-    FFT(sample);
-    for (auto iter : sample) {
-        cout << abs(iter) << endl;
-    }
-    return sample;
+    
+    return f_bins_collection;
 }
 
 // ***** NOW THE PRIVATE METHODS *****

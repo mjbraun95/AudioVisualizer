@@ -9,6 +9,11 @@ int main()
     double* data;
     unsigned long size;
     input_file.decode(&data, &size);
-    input_file.f_domain(&data, &size);
+
+    vector<vector<double>> f_bins_collection = input_file.f_domain(&data, &size);
+    for (auto iter : f_bins_collection[5]) {
+        cout << iter << endl;
+    }
+    cout << f_bins_collection[5].size() << endl;
     return 0;
 }
