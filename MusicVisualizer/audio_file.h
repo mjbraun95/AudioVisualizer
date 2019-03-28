@@ -43,7 +43,7 @@ public:
 
     // decode & re-sample the audio file into time domain 
     // data: array holding the transformed data
-    // size: size of the data
+    // size: size of the data array
     void decode(double** data, unsigned long* size);
 
     // transform the data to frequency domain

@@ -9,7 +9,7 @@
 using namespace std;
 
 /*
-     applying the Hann function to the discrete time signals
+     applying the window function to the discrete time signals
      to prevent spectral leakage
 */
 void window(vector<complex<double>> &sample){

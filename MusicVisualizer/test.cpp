@@ -17,7 +17,13 @@ int main()
     int bins = 100 / (sample_rate / N);
 
     double index = 0;
+    // to access the frequency bins at time t
+    // use f_bins_collection[t]
+    // to access a certain frequency bin (index i) at time t
+    // use f_bins_collection[t][i]
+
     vector<vector<double>> f_bins_collection = input_file.f_domain(&data, &size);
+
     for (auto iter : f_bins_collection) {
 
         if (iter[bins] > 100) {
