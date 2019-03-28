@@ -40,7 +40,7 @@ void FFT(vector<complex<double>> &sample) {
 
         complex<double> W_N = exp(-2 * M_PI * complex<double> (0, 1)/complex<double> (N, 0));
         // exponential term for k = 0
-        complex<double> W (1, 0);
+        complex<double> W  = 1;
 
         for (int k = 0; k < N/2; k++) {
             // combine the value until arrive at the expected frequency bins
@@ -48,6 +48,7 @@ void FFT(vector<complex<double>> &sample) {
             // if k > N/2, the experiential term is a repeat of k - N/2
             // sum becomes a repeat for all k > N/2
             sample[k + N/2] = even[k] - W * odd[k];
+
             // update the exponential term
             W *= W_N;
         }

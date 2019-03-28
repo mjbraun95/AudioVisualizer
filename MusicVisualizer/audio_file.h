@@ -49,13 +49,15 @@ public:
     // transform the data to frequency domain
     // return the two dimensional vector
     // containing the transformed frequency bins at time t (in second)
-    // e.g. the frequency bins at time 0:03 could be retrieved
+    // e.g. the frequency bins at time 3 * time_unit could be retrieved
     // by calling f_bins_collection[3]
     vector<vector<double>> f_domain(double** data, unsigned long* size);
 
 private:
     const char* file_name;
     int sample_rate;
+    // determine the # of frequency bins collected in a time period
+    double time_unit;
 };
 
 // ***** PUBLIC METHODS FIRST *****
@@ -78,8 +80,8 @@ void audio_file::decode(double** data, unsigned long* size) {
     }
 
     // walk through the AVFormatContext structure until find an audio stream
-    size_t aStream = 0;
-    for (aStream; aStream < formatCtx->nb_streams; aStream++) {
+    unsigned int aStream = 0;
+    for (; aStream < formatCtx->nb_streams; aStream++) {
         if (formatCtx->streams[aStream]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
             break;
         }   
@@ -205,23 +207,22 @@ void audio_file::decode(double** data, unsigned long* size) {
 }
 
 vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) {
-    // the audio duration (in second)
-    int duration = (int) *size / this->sample_rate;
     // the interpreted FFT algorithm could only handle the vector
     // with the size of 2 ^ m for m > 0
     int FFT_size = pow(2.0, (int) (log(this->sample_rate) / log(2)));
+    // e.g. if FFT_size = 32768 & this->sample_rate = 44100, then time_unit would be 0.74 s
+    this->time_unit = (double) FFT_size / (double) this->sample_rate;
+    // the audio duration (in time_unit)
+    int duration = (int) *size / FFT_size;
 
-    // store vectors contain the frequency bins for each second
+    // store vectors contain the frequency bins for each time unit
     vector<vector<double>> f_bins_collection(duration, vector<double> (FFT_size, 0));
     for (int i = 0; i < duration; i++) {
-        // feed the data storing the audio info for one second
+        // feed the data storing the audio info for one time unit
         // into the vector of complex number
         vector<complex<double>> sample;
         for (int j = 0; j < FFT_size; j++) {
-            // since FFT_size < this->sample_rate
-            // only extract the middle part of the audio info
-            sample.push_back((*data)[i * this->sample_rate
-                + (this->sample_rate - FFT_size)/2 + j]);
+            sample.push_back((*data)[i * FFT_size + j]);
         }
 
         FFT(sample);

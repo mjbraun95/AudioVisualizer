@@ -5,7 +5,7 @@
 
 int main()
 {
-    audio_file input_file("LastNight.mp3", 44100);
+    audio_file input_file("AskDNA.mp3", 44100);
     double* data;
     unsigned long size;
     input_file.decode(&data, &size);
@@ -15,5 +15,6 @@ int main()
         cout << iter << endl;
     }
     cout << f_bins_collection[5].size() << endl;
+    cout << f_bins_collection.size() << endl;
     return 0;
 }
