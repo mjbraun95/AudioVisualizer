@@ -1,8 +1,14 @@
+/*
+  Names:  Ang Li  Matthew Braun
+  IDs:    1550746 1497171
+  CMPUT 275, Winter 2019
+
+  Project: audio visualizer
+*/
 #ifndef _AUDIO_FILE_H_
 #define _AUDIO_FILE_H_
 
 #include <cmath>
-#include <complex>
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
@@ -20,7 +26,7 @@ using namespace std;
 
 /*  
     audio file decoder & transfer
-    decode part build upon the Libavcodec tutorial from
+    decode part build upon the Libavcodec tutorials retrieved from
         https://rodic.fr/blog/libavcodec-tutorial-decode-audio-file/
         dranger.com/ffmpeg/tutorial01.html
 
@@ -29,7 +35,7 @@ using namespace std;
     then transform it into frequency domain
     
     required libraries:
-        $apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev
+        $sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev
 */
 class audio_file {
 public:
@@ -42,42 +48,55 @@ public:
     }
 
     // decode & re-sample the audio file into time domain 
+    //
     // data: array holding the transformed data
     // size: size of the data array
     void decode(double** data, unsigned long* size);
 
     // transform the data to frequency domain
-    // return the two dimensional vector
-    // containing the transformed frequency bins at time t (in second)
-    // e.g. the frequency bins at time 3 * time_unit could be retrieved
-    // by calling f_bins_collection[3]
+    // return the two dimensional vector containing the transformed frequency bins
+    //
+    // to access the frequency bins at time t: f_bins_collection[t / time unit]
+    // to access i'th frequency bin (index i) at time t: f_bins_collection[t / time unit][i]
     vector<vector<double>> f_domain(double** data, unsigned long* size);
 
+    // extract the behavior of certain frequencies
+    //
+    // f_bins_collection: the transformed frequency bins collection
+    // frequencies: the frequencies to be investigated
+    // return the frequency bins collection representing required frequencies
+    vector<vector<double>> filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies);
+
     // return the time unit
-    // which determines the # of frequency bins collected in a time period
+    // which is determined by the # of frequency bins collected in a time period
     double get_time_unit() {
-        return this->time_unit;
+        return time_unit;
     }
 
 private:
     const char* file_name;
     int sample_rate;
-    // determines the # of frequency bins collected in a time period
-    double time_unit;
-    // the interpreted FFT algorithm could only handle the vector
+
+    // the implemented FFT algorithm could only handle the vector
     // with the size of 2 ^ m for m > 0
     int FFT_size = 2048;
+
+    // determined by the # of frequency bins collected in a time period
+    double time_unit;
+    // the audio duration (in time_unit)
+    int duration;
 };
 
 // ***** PUBLIC METHODS FIRST *****
 
 void audio_file::decode(double** data, unsigned long* size) {
+    cout << "Decoding audio..." << endl;
     // register all available file formats & codecs
     av_register_all();
 
     // read the auto file header & store info about its file format
     AVFormatContext* formatCtx = avformat_alloc_context();
-    if (avformat_open_input(&formatCtx, this->file_name, NULL, NULL) != 0) {
+    if (avformat_open_input(&formatCtx, file_name, NULL, NULL) != 0) {
         cout << "Failed to open the file" << endl;
         exit(1);
     }
@@ -121,13 +140,14 @@ void audio_file::decode(double** data, unsigned long* size) {
     SwrContext *swr = swr_alloc_set_opts(NULL, // allocate a new context
             AV_CH_LAYOUT_MONO, // out_ch_layout
             AV_SAMPLE_FMT_DBL, // out_sample_fmt
-            this->sample_rate, // out_sample_rate
+            sample_rate, // out_sample_rate
             codecCtx->channel_layout, // in_ch_layout
             codecCtx->sample_fmt, // in_sample_fmt
             codecCtx->sample_rate, // in_sample_rate
             0, // log_offset
             NULL); //log_ctx
 
+    // initialize the re-sampler
     swr_init(swr);
 
     if (!swr) {
@@ -173,7 +193,6 @@ void audio_file::decode(double** data, unsigned long* size) {
         av_samples_alloc((uint8_t**) &buffer, // audio_data
              NULL, // line size
              1, // nb_channels
-             // 1, // nb_channels
              frame->nb_samples, // nb_samples
              AV_SAMPLE_FMT_DBL, // sample_fmt
              0); // align
@@ -209,40 +228,62 @@ void audio_file::decode(double** data, unsigned long* size) {
 
     // close the audio file
     avformat_free_context(formatCtx);
+
+    cout << "Done!" << endl;
 }
 
 vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) {
-    // e.g. if FFT_size = 2048 & this->sample_rate = 44100, then time_unit would be 0.046 s
-    this->time_unit = (double) this->FFT_size / (double) this->sample_rate;
-    // the audio duration (in time_unit)
-    int duration = *size / this->FFT_size;
+    cout << "Transforming the data into the frequency domain..." << endl;
+    // e.g. if FFT_size = 2048 & this->sample_rate = 44100, then the time_unit would be 0.046 s
+    time_unit = (double) FFT_size / (double) sample_rate;
+    duration = *size / FFT_size;
 
     // store vectors contain the frequency bins for each time unit
-    vector<vector<double>> f_bins_collection(duration, vector<double> (this->FFT_size / 2, 0));
+    vector<vector<double>> f_bins_collection(duration, vector<double> (FFT_size / 2, 0));
     for (int i = 0; i < duration; i++) {
         // feed the data storing the audio info for one time unit
         // into the vector of complex number
-        vector<complex<double>> sample;
-        for (int j = 0; j < this->FFT_size; j++) {
-            sample.push_back((*data)[i * this->FFT_size + j]);
+        vector<complex> sample;
+        for (int j = 0; j < FFT_size; j++) {
+            sample.push_back(complex((*data)[i * FFT_size + j]));
         }
 
+        // prevent spectral leakage
         window(sample);
+        // Fast Fourier transform
         FFT(sample);
 
         // store the magnitude of each complex number
         int k = 0;
         for (auto iter : sample) {
-            f_bins_collection[i][k] = abs(iter);
+            f_bins_collection[i][k] = iter.abs();
+
             k += 1;
             // the useful index range for frequency is from 1 to N/2
-            if (k >= this->FFT_size / 2) {
+            if (k > FFT_size / 2 - 1) {
                 break;
             }
         }
     }
     
+    cout << "Done!" << endl;
     return f_bins_collection;
+}
+
+vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies) {
+    cout << "Extracting the behavior of required frequencies..." << endl;
+    // store the frequency bins collection representing required frequencies
+    vector<vector<double>> f_behavior(f_bins_collection.size(), vector<double> (frequencies.size(), 0));
+    for (int i = 0; i < f_bins_collection.size(); i++) {
+        for (int j = 0; j < frequencies.size(); j++) {
+            // the i'th bin in the FFT results representing the behavior of the frequency Fs where
+            // i * sample_rate / FFT_size = Fs
+            f_behavior[i][j] = f_bins_collection[i][(int) (frequencies[j] * FFT_size / sample_rate)];
+        }
+    }
+
+    cout << "Done!" << endl;
+    return f_behavior;
 }
 
 // ***** NOW THE PRIVATE METHODS *****

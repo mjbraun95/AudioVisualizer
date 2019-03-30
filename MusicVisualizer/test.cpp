@@ -5,7 +5,7 @@
 
 int main()
 {
-    audio_file input_file("440.mp3", 44100);
+    audio_file input_file("AskDNA.mp3", 44100);
     double* data;
     unsigned long size;
     input_file.decode(&data, &size);
