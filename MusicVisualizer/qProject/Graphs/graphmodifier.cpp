@@ -9,45 +9,15 @@
 #include <QtCore/QTime>
 #include <QtWidgets/QComboBox>
 #include <QtCore/qmath.h>
-#include <vector>
-#include <FFTStuff/audio_file.h>
+#include <fstream>
+#include <cstdlib>
+#include <iostream>
+//#include <vector>
 
 using namespace QtDataVisualization;
 
-vector<vector<double>> calcData()
-{
-    audio_file input_file("440.mp3", 44100);
-    double* data;
-    unsigned long size;
-    input_file.decode(&data, &size);
-
-    double N = 2048;
-    double sample_rate = 44100;
-
-    vector<double> appearance;
-    int bins = 100 / (sample_rate / N);
-
-    double index = 0;
-    // to access the frequency bins at time t
-    // use f_bins_collection[t]
-    // to access a certain frequency bin (index i) at time t
-    // use f_bins_collection[t][i]
-
-    vector<vector<double>> f_bins_collection = input_file.f_domain(&data, &size);
-
-//    for (auto iter : f_bins_collection) {
-
-        // if (iter[bins] > 100) {
-//            appearance.push_back(index * (N / sample_rate));
-            // cout << "iter[" << bins << "]: " << iter[bins] << "; freq: " << (index * (N / sample_rate)) << endl;
-        // }
-
-//        index += 1;
-//    }
-    return f_bins_collection;
-}
-
 const QString celsiusString = QString(QChar(0xB0)) + "C";
+float tempFloats[1024];
 
 GraphModifier::GraphModifier(Q3DBars *bargraph)
     : m_graph(bargraph),
@@ -56,8 +26,8 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
       m_fontSize(30),
       m_segments(4),
       m_subSegments(3),
-      m_minval(-20.0f),
-      m_maxval(20.0f),
+      m_minval(0.0f),
+      m_maxval(200.0f),
       m_magnitudeAxis(new QValue3DAxis),
       m_timeAxis(new QCategory3DAxis),
       m_freqAxis(new QCategory3DAxis),
@@ -72,16 +42,49 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_graph->activeTheme()->setLabelBackgroundEnabled(true);
     m_graph->setMultiSeriesUniform(true);
 
+    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Fuck/CMPUT275_Final_Project/MusicVisualizer/qProject/Graphs/output.txt");
+    std::string line;
+    int at, index=0;
+    while (getline(fin, line))
+    {
+        std::string p[2];
+        at = 0;
+        for (auto c : line)
+        {
+            if (c == ':')
+            {
+//                std::cout << "p[0]: " << p[at] << std::endl;
+                QString temp = QString::fromStdString(p[0]);
+//                std::cout << "p[0] size: " << p[0].size() << std::endl;
+                m_freqBuckets << temp;
+                ++at;
+            }
+            else
+            {
+                p[at] += c;
+            }
+        }
 
-    m_freqBuckets << "January";
-    m_freqBuckets << "February" << "March" << "April" << "May" << "June" << "July" << "August" << "September" << "October" << "November" << "December";
-    m_timeBuckets << "2006" << "2007" << "2008" << "2009" << "2010" << "2011" << "2012" << "2013";
+        std::cout << "index: " << index << std::endl;
+        tempFloats[index] = stof(p[1]);
+        std::cout << "tempFloats[index]: " << tempFloats[index] << std::endl;
+        index++;
+//        std::cout << line << std::endl;
+
+    }
+//    std::cout <<
+
+
+//    m_freqBuckets << "January";
+//    m_freqBuckets << "February" << "March" << "April" << "May" << "June" << "July" << "August" << "September" << "October" << "November" << "December";
+    m_timeBuckets << "2006";
 
     m_magnitudeAxis->setTitle("Magnitude");
+    std::cout << "m_segments: " << m_subSegments << std::endl;
     m_magnitudeAxis->setSegmentCount(m_segments);
     m_magnitudeAxis->setSubSegmentCount(m_subSegments);
     m_magnitudeAxis->setRange(m_minval, m_maxval);
-    m_magnitudeAxis->setLabelFormat(QString(QStringLiteral("%.1f ") + celsiusString));
+    m_magnitudeAxis->setLabelFormat(QString(QStringLiteral("%.1f ")));
     m_magnitudeAxis->setLabelAutoRotation(30.0f);
     m_magnitudeAxis->setTitleVisible(true);
 
@@ -152,29 +155,45 @@ GraphModifier::~GraphModifier()
 void GraphModifier::resetTemperatureData()
 {
     // Set up data
-    vector<vector<double>> data1 = calcData();
-    std::cout << "Resetting Data" << std::endl;
-    std::cout << data1[1][1] << std::endl;
-    static const float tempOulu[8][12] = {
-        {-6.7f, -11.7f, -9.7f, 3.3f, 9.2f, 14.0f, 16.3f, 17.8f, 10.2f, 2.1f, -2.6f, -0.3f},    // 2006
-        {-6.8f, -13.3f, 0.2f, 1.5f, 7.9f, 13.4f, 16.1f, 15.5f, 8.2f, 5.4f, -2.6f, -0.8f},      // 2007
-        {-4.2f, -4.0f, -4.6f, 1.9f, 7.3f, 12.5f, 15.0f, 12.8f, 7.6f, 5.1f, -0.9f, -1.3f},      // 2008
-        {-7.8f, -8.8f, -4.2f, 0.7f, 9.3f, 13.2f, 15.8f, 15.5f, 11.2f, 0.6f, 0.7f, -8.4f},      // 2009
-        {-14.4f, -12.1f, -7.0f, 2.3f, 11.0f, 12.6f, 18.8f, 13.8f, 9.4f, 3.9f, -5.6f, -13.0f},  // 2010
-        {-9.0f, -15.2f, -3.8f, 2.6f, 8.3f, 15.9f, 18.6f, 14.9f, 11.1f, 5.3f, 1.8f, -0.2f},     // 2011
-        {-8.7f, -11.3f, -2.3f, 0.4f, 7.5f, 12.2f, 16.4f, 14.1f, 9.2f, 3.1f, 0.3f, -12.1f},     // 2012
-        {-7.9f, -5.3f, -9.1f, 0.8f, 11.6f, 16.6f, 15.9f, 15.5f, 11.2f, 4.0f, 0.1f, -1.9f}      // 2013
-    };
+//    static const float tempOulu[1][1024];
 
-    static const float tempHelsinki[8][12] = {
-        {-3.7f, -7.8f, -5.4f, 3.4f, 10.7f, 15.4f, 18.6f, 18.7f, 14.3f, 8.5f, 2.9f, 4.1f},      // 2006
-        {-1.2f, -7.5f, 3.1f, 5.5f, 10.3f, 15.9f, 17.4f, 17.9f, 11.2f, 7.3f, 1.1f, 0.5f},       // 2007
-        {-0.6f, 1.2f, 0.2f, 6.3f, 10.2f, 13.8f, 18.1f, 15.1f, 10.1f, 9.4f, 2.5f, 0.4f},        // 2008
-        {-2.9f, -3.5f, -0.9f, 4.7f, 10.9f, 14.0f, 17.4f, 16.8f, 13.2f, 4.1f, 2.6f, -2.3f},     // 2009
-        {-10.2f, -8.0f, -1.9f, 6.6f, 11.3f, 14.5f, 21.0f, 18.8f, 12.6f, 6.1f, -0.5f, -7.3f},   // 2010
-        {-4.4f, -9.1f, -2.0f, 5.5f, 9.9f, 15.6f, 20.8f, 17.8f, 13.4f, 8.9f, 3.6f, 1.5f},       // 2011
-        {-3.5f, -3.2f, -0.7f, 4.0f, 11.1f, 13.4f, 17.3f, 15.8f, 13.1f, 6.4f, 4.1f, -5.1f},     // 2012
-        {-4.8f, -1.8f, -5.0f, 2.9f, 12.8f, 17.2f, 18.0f, 17.1f, 12.5f, 7.5f, 4.5f, 2.3f}       // 2013
+    static float tempOulu[1][1024];
+    for (int i=0; i<1024; i++)
+    {
+        tempOulu[0][i] = tempFloats[i];
+//        std::cout << "tempFloats[i+19]: " << tempFloats[i+19] << std::endl;
+//        std::cout << "tempOulu[1][i]: " << tempOulu[1][i] << std::endl;
+        std::cout <<"i: " << i << std::endl;
+    }
+
+
+//    static float tempOulu[1][12] = {
+//        {200.1234, -11.7, -9.7, 3.3, 9.2, 14.0, 16.3, 17.8, 10.2, 2.1, -2.6, -0.3}    };
+//        for (int i=0; i<12; i++)
+//        {
+//            std::cout << "tempOulu[1][i]: " << tempOulu[0][i] << std::endl;
+//        }
+
+
+    //,    // 2006
+//        {-6.8f, -13.3f, 0.2f, 1.5f, 7.9f, 13.4f, 16.1f, 15.5f, 8.2f, 5.4f, -2.6f, -0.8f},      // 2007
+//        {-4.2f, -4.0f, -4.6f, 1.9f, 7.3f, 12.5f, 15.0f, 12.8f, 7.6f, 5.1f, -0.9f, -1.3f},      // 2008
+//        {-7.8f, -8.8f, -4.2f, 0.7f, 9.3f, 13.2f, 15.8f, 15.5f, 11.2f, 0.6f, 0.7f, -8.4f},      // 2009
+//        {-14.4f, -12.1f, -7.0f, 2.3f, 11.0f, 12.6f, 18.8f, 13.8f, 9.4f, 3.9f, -5.6f, -13.0f},  // 2010
+//        {-9.0f, -15.2f, -3.8f, 2.6f, 8.3f, 15.9f, 18.6f, 14.9f, 11.1f, 5.3f, 1.8f, -0.2f},     // 2011
+//        {-8.7f, -11.3f, -2.3f, 0.4f, 7.5f, 12.2f, 16.4f, 14.1f, 9.2f, 3.1f, 0.3f, -12.1f},     // 2012
+//        {-7.9f, -5.3f, -9.1f, 0.8f, 11.6f, 16.6f, 15.9f, 15.5f, 11.2f, 4.0f, 0.1f, -1.9f}      // 2013
+//    };
+
+    static const float tempHelsinki[1][12] = {
+        {-3.7f, -7.8f, -5.4f, 3.4f, 10.7f, 15.4f, 18.6f, 18.7f, 14.3f, 8.5f, 2.9f, 4.1f}//,      // 2006
+//        {-1.2f, -7.5f, 3.1f, 5.5f, 10.3f, 15.9f, 17.4f, 17.9f, 11.2f, 7.3f, 1.1f, 0.5f},       // 2007
+//        {-0.6f, 1.2f, 0.2f, 6.3f, 10.2f, 13.8f, 18.1f, 15.1f, 10.1f, 9.4f, 2.5f, 0.4f},        // 2008
+//        {-2.9f, -3.5f, -0.9f, 4.7f, 10.9f, 14.0f, 17.4f, 16.8f, 13.2f, 4.1f, 2.6f, -2.3f},     // 2009
+//        {-10.2f, -8.0f, -1.9f, 6.6f, 11.3f, 14.5f, 21.0f, 18.8f, 12.6f, 6.1f, -0.5f, -7.3f},   // 2010
+//        {-4.4f, -9.1f, -2.0f, 5.5f, 9.9f, 15.6f, 20.8f, 17.8f, 13.4f, 8.9f, 3.6f, 1.5f},       // 2011
+//        {-3.5f, -3.2f, -0.7f, 4.0f, 11.1f, 13.4f, 17.3f, 15.8f, 13.1f, 6.4f, 4.1f, -5.1f},     // 2012
+//        {-4.8f, -1.8f, -5.0f, 2.9f, 12.8f, 17.2f, 18.0f, 17.1f, 12.5f, 7.5f, 4.5f, 2.3f}       // 2013
     };
 
     // Create data arrays
@@ -275,6 +294,7 @@ void GraphModifier::changeFontSize(int fontsize)
     QFont font = m_graph->activeTheme()->font();
     font.setPointSize(m_fontSize);
     m_graph->activeTheme()->setFont(font);
+    std::cout << "fontsize: " << m_fontSize << std::endl;
 }
 
 void GraphModifier::shadowQualityUpdatedByVisual(QAbstract3DGraph::ShadowQuality sq)

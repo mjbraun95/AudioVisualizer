@@ -32,9 +32,7 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    graphmodifier.h \
-    FFTStuff/FFT.h \
-    FFTStuff/audio_file.h
+    graphmodifier.h
         graphmodifier.h
 
 FORMS += \
@@ -53,4 +51,5 @@ LIBS += -lavutil
 LIBS += -lswresample
 
 DISTFILES += \
-    qml.qml
+    qml.qml \
+    output.txt

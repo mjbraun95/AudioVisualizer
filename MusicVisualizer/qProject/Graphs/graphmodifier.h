@@ -10,6 +10,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QPointer>
 #include <QtCore/QPropertyAnimation>
+//#include <fstream>
+//#include <cstdlib>
 
 using namespace QtDataVisualization;
 
@@ -54,6 +56,7 @@ Q_SIGNALS:
     void fontSizeChanged(int size);
 
 private:
+//    ifstream fin(string filename);
     Q3DBars *m_graph;
     float m_xRotation;
     float m_yRotation;
