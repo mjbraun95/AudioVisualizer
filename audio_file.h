@@ -327,7 +327,7 @@ unordered_set<int> audio_file::beat_detector(vector<vector<double>> &f_bins_coll
     // find the qualified beats & get the time they appear
     for (int i = 0; i < energy.size(); i++) {
         if (energy[i] > threshold * totalE) {
-            beat_appearance.insert(i * time_unit);
+            beat_appearance.insert(i * time_unit * 10); // round to 0.1 s
         }
     }
 
