@@ -23,12 +23,12 @@
 #include <unistd.h>
 
 //reference: https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
-std::string getexepath()
-{
-  char result[ PATH_MAX ];
-  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-  return std::string( result, (count > 0) ? count : 0 );
-}
+//std::string getexepath()
+//{
+//  char result[ PATH_MAX ];
+//  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+//  return std::string( result, (count > 0) ? count : 0 );
+//}
 
 using namespace QtDataVisualization;
 
@@ -38,7 +38,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     : m_graph(bargraph),
       m_xRotation(0.0f),
       m_yRotation(0.0f),
-      m_fontSize(30),
+      m_fontSize(1),
       m_segments(4),
       m_subSegments(3),
       m_minval(0.0f),
@@ -59,9 +59,9 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     // Adjust spaces between bars
     QSizeF barSize(0,0);
     m_graph->setBarSpacing(barSize);
-    m_graph->setBarThickness(5);
+    m_graph->setBarThickness(10);
     QDir::current();
-    std::ifstream fin(getexepath());
+    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Project 2/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
     std::string line;
     getline(fin, line);
     timeIndexLen = std::stoi(line);
@@ -112,7 +112,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
                   << "A6" << "A#6" << "B6" << "C6" << "C#6" << "D6" << "D#6" << "E6" << "F6" << "F#6" << "G6"<< "G#6";
 
     m_magnitudeAxis->setTitle("Magnitude");
-    std::cout << "getexepath(): " << getexepath() << std::endl;
+//    std::cout << "getexepath(): " << getexepath() << std::endl;
     m_magnitudeAxis->setSegmentCount(m_segments);
     m_magnitudeAxis->setSubSegmentCount(m_subSegments);
     m_magnitudeAxis->setRange(m_minval, m_maxval);
@@ -225,10 +225,18 @@ void GraphModifier::startAnimate(QTimer *timer)
 int frame = 0;
 void GraphModifier::animate()
 {
-    if (frame >=6302)
+    if (frame >=6303)
         frame=0;
     frame += 1;
     m_timeAxis->setRange(frame, frame+1);
+}
+
+void GraphModifier::build()
+{
+    if (frame >=6303)
+        frame=0;
+    frame += 1;
+    m_timeAxis->setRange(0, frame+1);
 }
 
 void GraphModifier::changeStyle(int style)

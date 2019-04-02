@@ -264,16 +264,17 @@ int main(int argc, char *argv[])
 
 
 
-    QTimer *timer = new QTimer(&app);
+
 //    QElapsedTimer *accurTimer = new QElapsedTimer();
 
-    QObject::connect(timer, &QTimer::timeout, modifier, &GraphModifier::animate);
-     timer->start(1);
+
 //    QObject::connect(accurTimer, &QElapsedTimer::timeout, modifier, &GraphModifier::animate);
 //    accurTimer->nsecsElapsed();
-     //POSSIBLY where data is inputted?
-//    QObject::connect(animateButton, &QPushButton::clicked, timer,
-//                      &GraphModifier::startAnimate(timer));
+
+
+
+//    QObject::connect(animateButton, &QPushButton::clicked,
+//                      &MainWindow::startAnimation);
 
     QObject::connect(barStyleList, SIGNAL(currentIndexChanged(int)), modifier,
                      SLOT(changeStyle(int)));
@@ -309,6 +310,20 @@ int main(int argc, char *argv[])
     QObject::connect(axisLabelRotationSlider, &QSlider::valueChanged, modifier,
                      &GraphModifier::changeLabelRotation);
 
+
+    QTimer *timer = new QTimer(&app);
+
+    //Animate mode
+//    QObject::connect(timer, &QTimer::timeout, modifier, &GraphModifier::animate);
+//    timer->start(46);
+
+    //Build mode
+    QObject::connect(timer, &QTimer::timeout, modifier, &GraphModifier::build);
+    timer->start(5);
+
+
     widget->show();
     return app.exec();
 }
+
+

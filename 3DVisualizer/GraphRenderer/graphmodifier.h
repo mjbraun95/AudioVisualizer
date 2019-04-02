@@ -40,6 +40,7 @@ public Q_SLOTS:
     void changeRange(int range);
     void startAnimate(QTimer *timer);
     void animate();
+    void build();
     void changeStyle(int style);
     void changeSelectionMode(int selectionMode);
     void changeTheme(int theme);

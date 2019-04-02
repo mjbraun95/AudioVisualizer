@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "graphmodifier.h"
 
 namespace Ui {
 class MainWindow;
@@ -14,6 +15,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+//public slots:
+//    void startAnimation();
 
 private:
     Ui::MainWindow *ui;
