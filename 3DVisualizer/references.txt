@@ -1,0 +1,5 @@
+3D bar graph visualization code was found and modified from:
+	https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
+
+currentPath function:
+	https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html

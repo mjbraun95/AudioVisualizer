@@ -1,0 +1,16 @@
+Makes sure your sound card is enabled before executing the script
+For Ubuntu running in VMware:
+    In task-bar:
+        VM --> Settings --> Add --> Sound Card
+
+Installation:
+    STK:
+        Download STK and put it in a location of your choice. In the following notes, it is assumed that the STK distribution is located in the /Users/me/Desktop/stk/ directory and that a static library has been compiled in the src subdirectory (first run ``configure'' script in top level directory, then ``make'' in src/ directory).
+
+        Under these conditions, we can compile a simple C++ program file myprogram.cpp from any directory and link against the STK library as follows (further libraries may be necessary depending on the particular program):
+
+        $g++ -o myprogram -I/Users/me/Desktop/stk/include/ -L/Users/me/Desktop/stk/src/ myprogram.cpp -lstk
+
+    libavcodec:
+        $apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev
+        -lavcodec-ffmpeg -lavformat-ffmpeg -lavutil -lswresample
