@@ -22,7 +22,7 @@ public:
     explicit GraphModifier(Q3DBars *bargraph);
     ~GraphModifier();
 
-    void resetTemperatureData();
+    void resetData();
     void changePresetCamera();
     void changeLabelBackground();
     void changeFont(const QFont &font);
@@ -51,6 +51,10 @@ public Q_SLOTS:
     void changeShadowQuality(int quality);
     void shadowQualityUpdatedByVisual(QAbstract3DGraph::ShadowQuality shadowQuality);
     void changeLabelRotation(int rotation);
+    void changeThickness(int thickness);
+    void changeAnimateSpeed(int animateSpeed);
+    void changeBuildSpeed(int buildSpeed);
+    void changeFrameBuffer(int buffer);
     void setAxisTitleVisibility(bool enabled);
     void setAxisTitleFixed(bool enabled);
     void zoomToSelectedBar();

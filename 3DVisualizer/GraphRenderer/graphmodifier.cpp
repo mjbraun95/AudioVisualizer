@@ -42,7 +42,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
       m_segments(4),
       m_subSegments(3),
       m_minval(0.0f),
-      m_maxval(200.0f),
+      m_maxval(400.0f),
       m_magnitudeAxis(new QValue3DAxis),
       m_timeAxis(new QCategory3DAxis),
       m_freqAxis(new QCategory3DAxis),
@@ -59,7 +59,14 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_freqAxis->setTitleFixed(false);
     m_timeAxis->setTitleFixed(false);
 
+    //Adjusts bar sizes + spacing
+    QSizeF barSize(0,0);
+    m_graph->setBarSpacing(barSize);
+    m_graph->setBarThickness(38);
+
     QDir::current();
+
+    // Loads FFT data from outputted txt file in "FileDecoder" folder
     std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
     std::string line;
     getline(fin, line);
@@ -67,15 +74,14 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     getline(fin, line);
     freqIndexLen = std::stoi(line);
 
+    // Parses through "output.txt" file and converts to array
     int at, freqIndex,timeIndex;
     for (timeIndex=0; timeIndex<timeIndexLen; timeIndex++)
     {
         getline(fin, line);
         if (line == "NEXT_TIME_INTERVAL")
         {
-//            std::cout << "line: " << line << std::endl;
             getline(fin, line);
-//            std::cout << "line: " << line << std::endl;
             QString time = QString::fromStdString(line);
             m_timeBuckets << time;
         }
@@ -130,7 +136,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_graph->setRowAxis(m_timeAxis);
     m_graph->setColumnAxis(m_freqAxis);
 
-    m_primarySeries->setItemLabelFormat(QStringLiteral("Oulu - @colLabel @rowLabel: @valueLabel"));
+    m_primarySeries->setItemLabelFormat(QStringLiteral("Note: @colLabel, Time: @rowLabel seconds, Magnitude: @valueLabel"));
     m_primarySeries->setMesh(QAbstract3DSeries::MeshBevelBar);
     m_primarySeries->setMeshSmooth(false);
 
@@ -138,7 +144,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
 
     changePresetCamera();
 
-    resetTemperatureData();
+    resetData();
 
     // Set up property animations for zooming to the selected bar
     Q3DCamera *camera = m_graph->scene()->activeCamera();
@@ -178,10 +184,10 @@ GraphModifier::~GraphModifier()
     delete m_graph;
 }
 
-void GraphModifier::resetTemperatureData()
-{
-    // Set up data
+// Loads the FFT data to the
+void GraphModifier::resetData()
 
+{
     // Create data arrays
     QBarDataArray *dataSet = new QBarDataArray;
     QBarDataRow *dataRow;
@@ -200,7 +206,6 @@ void GraphModifier::resetTemperatureData()
 
     // Add data to the data proxy (the data proxy assumes ownership of it)
     m_primarySeries->dataProxy()->resetArray(dataSet, m_timeBuckets, m_freqBuckets);
-//    m_secondarySeries->dataProxy()->resetArray(dataSet2, m_timeBuckets, m_freqBuckets);
 }
 
 void GraphModifier::changeRange(int range)
@@ -222,13 +227,15 @@ QSizeF barSize(0,0);
 
 QTimer *timer = new QTimer();
 int frame = 0;
+int frameBuffer = 2;
+int currentAnimateSpeed = 46;
+int currentBuildSpeed = 250;
 void GraphModifier::startAnimate()
 {
-    m_graph->setBarSpacing(barSize);
-    m_graph->setBarThickness(5);
+    changeThickness(5);
     frame = 0;
     QObject::connect(timer, &QTimer::timeout, this, &GraphModifier::animate);
-    timer->start(1);
+    timer->start(currentAnimateSpeed);
 }
 
 void GraphModifier::stopAnimate()
@@ -238,11 +245,10 @@ void GraphModifier::stopAnimate()
 
 void GraphModifier::startBuild()
 {
-    m_graph->setBarSpacing(barSize);
-    m_graph->setBarThickness(5);
+    changeThickness(5);
     frame = 0;
     QObject::connect(timer, &QTimer::timeout, this, &GraphModifier::build);
-    timer->start(1);
+    timer->start(currentBuildSpeed);
 }
 void GraphModifier::stopBuild()
 {
@@ -251,15 +257,13 @@ void GraphModifier::stopBuild()
 
 void GraphModifier::staticBuild()
 {
-    m_graph->setBarSpacing(barSize);
-    m_graph->setBarThickness(40);
+    changeThickness(38);
     m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
 }
-
 void GraphModifier::animate()
 {
     frame += 1;
-    m_timeAxis->setRange(frame, frame+1);
+    m_timeAxis->setRange(frame, frame+frameBuffer);
 }
 
 void GraphModifier::build()
@@ -268,6 +272,33 @@ void GraphModifier::build()
     m_timeAxis->setRange(0, frame+1);
 }
 
+void GraphModifier::changeAnimateSpeed(int animateSpeed)
+{
+    currentAnimateSpeed = animateSpeed;
+    std::cout << "animateSpeed: " << animateSpeed << std::endl;
+    stopAnimate();
+    startAnimate();
+}
+
+void GraphModifier::changeBuildSpeed(int buildSpeed)
+{
+    currentBuildSpeed = buildSpeed;
+    std::cout << "buildSpeed: " << buildSpeed << std::endl;
+    stopBuild();
+    startBuild();
+}
+
+void GraphModifier::changeThickness(int thickness)
+{
+    m_graph->setBarThickness(thickness);
+    std::cout << "thickness: " << thickness << std::endl;
+}
+
+void GraphModifier::changeFrameBuffer(int buffer)
+{
+    frameBuffer = buffer;
+    std::cout << "frameBuffer: " << frameBuffer << std::endl;
+}
 
 
 

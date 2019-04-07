@@ -43,28 +43,21 @@ int main(int argc, char *argv[])
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     container->setFocusPolicy(Qt::StrongFocus);
 
-
-
-
-
-
-    //  we'll create horizontal and vertical layouts. We'll add the graph and the vertical layout into the horizontal one:
     QWidget *widget = new QWidget;
     QHBoxLayout *hLayout = new QHBoxLayout(widget);
     QVBoxLayout *vLayout = new QVBoxLayout();
     hLayout->addWidget(container, 1);
     hLayout->addLayout(vLayout);
 
-
-
+    // Set program title
     widget->setWindowTitle(QStringLiteral("3D Magnitude-Frequency-Time Visualization"));
 
-
-
+    // Smooth bar rendering option
     QCheckBox *smoothCheckBox = new QCheckBox(widget);
     smoothCheckBox->setText(QStringLiteral("Smooth bars"));
     smoothCheckBox->setChecked(false);
 
+    // Bar shape options
     QComboBox *barStyleList = new QComboBox(widget);
     barStyleList->addItem(QStringLiteral("Bar"), int(QAbstract3DSeries::MeshBar));
     barStyleList->addItem(QStringLiteral("Pyramid"), int(QAbstract3DSeries::MeshPyramid));
@@ -124,7 +117,6 @@ int main(int argc, char *argv[])
     reverseValueAxisCheckBox->setText(QStringLiteral("Reverse value axis"));
     reverseValueAxisCheckBox->setChecked(false);
 
-    //! [4]
     QSlider *rotationSliderX = new QSlider(Qt::Horizontal, widget);
     rotationSliderX->setTickInterval(30);
     rotationSliderX->setTickPosition(QSlider::TicksBelow);
@@ -137,29 +129,43 @@ int main(int argc, char *argv[])
     rotationSliderY->setMinimum(-90);
     rotationSliderY->setValue(0);
     rotationSliderY->setMaximum(90);
-    //! [4]
-
-
-    QFontComboBox *fontList = new QFontComboBox(widget);
-//    fontList->setCurrentFont(QFont("Times New Roman"));
 
     //#### Checkboxes
-
-//    QGroupBox *frameBox = new QGroupBox(widget);
     QRadioButton *staticMode = new QRadioButton(widget);
-    staticMode->setText("3D Static Mode");
+    staticMode->setText("Static Mode");
     staticMode->setChecked(true);
     QRadioButton *animateMode = new QRadioButton(widget);
-    animateMode->setText("2D Animation Mode");
+    animateMode->setText("Animation Mode");
     QRadioButton *buildMode = new QRadioButton(widget);
-    buildMode->setText("3D Build Mode");
+    buildMode->setText("Build Mode");
+
+    QSlider *refreshAnimateSpeedSlider = new QSlider(Qt::Horizontal, widget);
+    refreshAnimateSpeedSlider->setTickInterval(1);
+    refreshAnimateSpeedSlider->setTickPosition(QSlider::TicksBelow);
+    refreshAnimateSpeedSlider->setMinimum(1);
+    refreshAnimateSpeedSlider->setValue(46);
+    refreshAnimateSpeedSlider->setMaximum(1000);
+
+    QSlider *refreshBuildSpeedSlider = new QSlider(Qt::Horizontal, widget);
+    refreshBuildSpeedSlider->setTickInterval(1);
+    refreshBuildSpeedSlider->setTickPosition(QSlider::TicksBelow);
+    refreshBuildSpeedSlider->setMinimum(250);
+    refreshBuildSpeedSlider->setValue(250);
+    refreshBuildSpeedSlider->setMaximum(1000);
 
     QSlider *thicknessSlider = new QSlider(Qt::Horizontal, widget);
     thicknessSlider->setTickInterval(1);
     thicknessSlider->setTickPosition(QSlider::TicksBelow);
-    thicknessSlider->setMinimum(0);
-    thicknessSlider->setValue(20);
-    thicknessSlider->setMaximum(50);
+    thicknessSlider->setMinimum(1);
+    thicknessSlider->setValue(38);
+    thicknessSlider->setMaximum(40);
+
+    QSlider *frameBufferSlider = new QSlider(Qt::Horizontal, widget);
+    frameBufferSlider->setTickInterval(1);
+    frameBufferSlider->setTickPosition(QSlider::TicksBelow);
+    frameBufferSlider->setMinimum(2);
+    frameBufferSlider->setValue(2);
+    frameBufferSlider->setMaximum(500);
 
     QCheckBox *axisTitlesVisibleCB = new QCheckBox(widget);
     axisTitlesVisibleCB->setText(QStringLiteral("Axis titles visible"));
@@ -172,46 +178,78 @@ int main(int argc, char *argv[])
     axisLabelRotationSlider->setValue(30);
     axisLabelRotationSlider->setMaximum(90);
 
+
+    //#### Widgets
+    vLayout->addWidget(new QLabel(QStringLiteral("Bar Thickness")));
+    vLayout->addWidget(thicknessSlider, 1, Qt::AlignTop);
+    vLayout->addWidget(new QLabel(QStringLiteral("Render Modes")));
+    vLayout->addWidget(staticMode);
+    vLayout->addWidget(animateMode);
+    vLayout->addWidget(new QLabel(QStringLiteral("Animate Speed")));
+    vLayout->addWidget(refreshAnimateSpeedSlider, 1, Qt::AlignTop);
+    vLayout->addWidget(new QLabel(QStringLiteral("Buffer Length (will reduce speed)")));
+    vLayout->addWidget(frameBufferSlider, 1, Qt::AlignTop);
+    vLayout->addWidget(buildMode);
+    vLayout->addWidget(new QLabel(QStringLiteral("Build Speed")));
+    vLayout->addWidget(refreshBuildSpeedSlider, 1, Qt::AlignTop);
+
+
     //! [5]
     vLayout->addWidget(new QLabel(QStringLiteral("Rotate horizontally")));
     vLayout->addWidget(rotationSliderX, 0, Qt::AlignTop);
     vLayout->addWidget(new QLabel(QStringLiteral("Rotate vertically")));
     vLayout->addWidget(rotationSliderY, 0, Qt::AlignTop);
-    //! [5]
     vLayout->addWidget(cameraButton, 0, Qt::AlignTop);
     vLayout->addWidget(zoomToSelectedButton, 0, Qt::AlignTop);
     vLayout->addWidget(gridCheckBox);
     vLayout->addWidget(smoothCheckBox);
     vLayout->addWidget(reverseValueAxisCheckBox);
     vLayout->addWidget(axisTitlesVisibleCB);
-    vLayout->addWidget(new QLabel(QStringLiteral("Render Modes")));
-
-    //#### Widgets
-
-    vLayout->addWidget(staticMode);
-    vLayout->addWidget(animateMode);
-    vLayout->addWidget(buildMode);
-
     vLayout->addWidget(new QLabel(QStringLiteral("Change bar style")));
     vLayout->addWidget(barStyleList);
     vLayout->addWidget(new QLabel(QStringLiteral("Change selection mode")));
     vLayout->addWidget(selectionModeList);
-
-    //#### mine
     vLayout->addWidget(new QLabel(QStringLiteral("Axis label rotation")));
     vLayout->addWidget(axisLabelRotationSlider, 1, Qt::AlignTop);
-    vLayout->addWidget(new QLabel(QStringLiteral("Bar Thickness")));
-    vLayout->addWidget(thicknessSlider, 1, Qt::AlignTop);
 
-    //! [2]
     GraphModifier *modifier = new GraphModifier(widgetgraph);
-    //! [2]
 
-    //! [6]
+    // Connects "Static Mode" button to relevant functions
+    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::stopAnimate);
+    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::stopBuild);
+    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::staticBuild);
+
+    // Connects "Animate Mode" button to relevant functions
+    QObject::connect(animateMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::stopBuild);
+    QObject::connect(animateMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::startAnimate);
+
+    // Connects "Build Mode" button to relevant functions
+    QObject::connect(buildMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::stopAnimate);
+    QObject::connect(buildMode, &QRadioButton::clicked, modifier,
+                      &GraphModifier::startBuild);
+
+    // Connects "Speed" sliders to relevant functions
+    QObject::connect(refreshAnimateSpeedSlider, &QSlider::valueChanged, modifier,
+                     &GraphModifier::changeAnimateSpeed);
+    QObject::connect(refreshBuildSpeedSlider, &QSlider::valueChanged, modifier,
+                     &GraphModifier::changeBuildSpeed);
+
+    // Connects "Bar Thickness" slider to relevant function
+    QObject::connect(thicknessSlider, &QSlider::valueChanged, modifier,
+                     &GraphModifier::changeThickness);
+
+    // Connects "Frame Buffer" slider to relevant function
+    QObject::connect(frameBufferSlider, &QSlider::valueChanged, modifier,
+                     &GraphModifier::changeFrameBuffer);
+
     QObject::connect(rotationSliderX, &QSlider::valueChanged, modifier, &GraphModifier::rotateX);
     QObject::connect(rotationSliderY, &QSlider::valueChanged, modifier, &GraphModifier::rotateY);
-    //! [6]
-
     QObject::connect(cameraButton, &QPushButton::clicked, modifier,
                      &GraphModifier::changePresetCamera);
     QObject::connect(zoomToSelectedButton, &QPushButton::clicked, modifier,
@@ -222,47 +260,16 @@ int main(int argc, char *argv[])
                      &GraphModifier::setSmoothBars);
     QObject::connect(reverseValueAxisCheckBox, &QCheckBox::stateChanged, modifier,
                      &GraphModifier::setReverseValueAxis);
-
     QObject::connect(modifier, &GraphModifier::gridEnabledChanged,
                      gridCheckBox, &QCheckBox::setChecked);
-
-
-    //#### Connect
-    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::stopAnimate);
-    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::stopBuild);
-    QObject::connect(staticMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::staticBuild);
-
-    QObject::connect(animateMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::stopBuild);
-    QObject::connect(animateMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::startAnimate);
-
-
-    QObject::connect(buildMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::stopAnimate);
-    QObject::connect(buildMode, &QRadioButton::clicked, modifier,
-                      &GraphModifier::startBuild);
-
-
-
     QObject::connect(barStyleList, SIGNAL(currentIndexChanged(int)), modifier,
                      SLOT(changeStyle(int)));
-
     QObject::connect(selectionModeList, SIGNAL(currentIndexChanged(int)), modifier,
                      SLOT(changeSelectionMode(int)));
-
-    QObject::connect(modifier, &GraphModifier::fontChanged, fontList,
-                     &QFontComboBox::setCurrentFont);
-
     QObject::connect(axisTitlesVisibleCB, &QCheckBox::stateChanged, modifier,
                      &GraphModifier::setAxisTitleVisibility);
-
     QObject::connect(axisLabelRotationSlider, &QSlider::valueChanged, modifier,
                      &GraphModifier::changeLabelRotation);
-
     widget->show();
     return app.exec();
 }
