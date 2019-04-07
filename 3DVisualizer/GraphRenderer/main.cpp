@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     refreshBuildSpeedSlider->setTickInterval(1);
     refreshBuildSpeedSlider->setTickPosition(QSlider::TicksBelow);
     refreshBuildSpeedSlider->setMinimum(1);
-    refreshBuildSpeedSlider->setMaximum(250);
+    refreshBuildSpeedSlider->setMaximum(400);
 
     // Initializes + sets parameters for "Bar Thickness" slider
     QSlider *thicknessSlider = new QSlider(Qt::Horizontal, widget);
