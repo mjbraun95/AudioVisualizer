@@ -32,15 +32,15 @@
 
 using namespace QtDataVisualization;
 
-float tempFloats[6304][74];
+float tempFloats[10000][74];
 
 GraphModifier::GraphModifier(Q3DBars *bargraph)
     : m_graph(bargraph),
       m_xRotation(0.0f),
       m_yRotation(0.0f),
       m_fontSize(1),
-      m_segments(4),
-      m_subSegments(3),
+      m_segments(2),
+      m_subSegments(2),
       m_minval(0.0f),
       m_maxval(200.0f),
       m_magnitudeAxis(new QValue3DAxis),
@@ -111,8 +111,8 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
                   << "A5" << "A#5" << "B5" << "C5" << "C#5" << "D5" << "D#5" << "E5" << "F5" << "F#5" << "G5"<< "G#5"
                   << "A6" << "A#6" << "B6" << "C6" << "C#6" << "D6" << "D#6" << "E6" << "F6" << "F#6" << "G6"<< "G#6";
 
+
     m_magnitudeAxis->setTitle("Magnitude");
-//    std::cout << "getexepath(): " << getexepath() << std::endl;
     m_magnitudeAxis->setSegmentCount(m_segments);
     m_magnitudeAxis->setSubSegmentCount(m_subSegments);
     m_magnitudeAxis->setRange(m_minval, m_maxval);
@@ -131,7 +131,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_graph->setRowAxis(m_timeAxis);
     m_graph->setColumnAxis(m_freqAxis);
 
-    m_primarySeries->setItemLabelFormat(QStringLiteral("Oulu - @colLabel @rowLabel: @valueLabel"));
+    m_primarySeries->setItemLabelFormat(QStringLiteral("Volume of @colLabel note at @rowLabel seconds: @valueLabel"));
     m_primarySeries->setMesh(QAbstract3DSeries::MeshBevelBar);
     m_primarySeries->setMeshSmooth(false);
 
@@ -171,7 +171,9 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_animationCameraZoom.setKeyValueAt(zoomOutFraction, QVariant::fromValue(50.0f));
     m_animationCameraTarget.setKeyValueAt(zoomOutFraction,
                                           QVariant::fromValue(QVector3D(0.0f, 0.0f, 0.0f)));
-
+    float tempFloats[m_timeBuckets.count()][m_freqBuckets.count()];
+    std::cout << "timebuckets.count: " << m_timeBuckets.count() << std::endl;
+    std::cout << "timebuckets.count: " << m_freqBuckets.count() << std::endl;
 }
 
 GraphModifier::~GraphModifier()
@@ -206,15 +208,15 @@ void GraphModifier::resetTemperatureData()
 
 void GraphModifier::changeRange(int range)
 {
-    std::cout << "Changing range= " << range << std::endl;
     if (range >= m_timeBuckets.count())
     {
-        std::cout << "timebuckets.count: " << m_timeBuckets.count() << std::endl;
         m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
     }
     else
         m_timeAxis->setRange(range, range);
 }
+
+
 
 //####mymethods
 void GraphModifier::startAnimate(QTimer *timer)
@@ -225,7 +227,7 @@ void GraphModifier::startAnimate(QTimer *timer)
 int frame = 0;
 void GraphModifier::animate()
 {
-    if (frame >=6303)
+    if (frame >=m_timeBuckets.count())
         frame=0;
     frame += 1;
     m_timeAxis->setRange(frame, frame+1);
@@ -233,7 +235,7 @@ void GraphModifier::animate()
 
 void GraphModifier::build()
 {
-    if (frame >=6303)
+    if (frame >=m_timeBuckets.count())
         frame=0;
     frame += 1;
     m_timeAxis->setRange(0, frame+1);
