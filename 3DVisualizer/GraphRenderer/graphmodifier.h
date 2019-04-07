@@ -10,11 +10,10 @@
 #include <QtCore/QStringList>
 #include <QtCore/QPointer>
 #include <QtCore/QPropertyAnimation>
-//#include <fstream>
-//#include <cstdlib>
 
 using namespace QtDataVisualization;
 
+// Found and modified from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 class GraphModifier : public QObject
 {
     Q_OBJECT
@@ -24,17 +23,12 @@ public:
 
     void resetData();
     void changePresetCamera();
-    void changeLabelBackground();
-    void changeFont(const QFont &font);
-    void changeFontSize(int fontsize);
     void rotateX(int rotation);
     void rotateY(int rotation);
-    void setBackgroundEnabled(int enabled);
     void setGridEnabled(int enabled);
     void setSmoothBars(int smooth);
     void setSeriesVisibility(int enabled);
     void setReverseValueAxis(int enabled);
-    void setReflection(bool enabled);
 
 public Q_SLOTS:
     void changeRange(int range);
@@ -45,26 +39,16 @@ public Q_SLOTS:
     void staticBuild();
     void animate();
     void build();
-    void changeStyle(int style);
-    void changeSelectionMode(int selectionMode);
-    void changeTheme(int theme);
-    void changeShadowQuality(int quality);
-    void shadowQualityUpdatedByVisual(QAbstract3DGraph::ShadowQuality shadowQuality);
     void changeLabelRotation(int rotation);
     void changeThickness(int thickness);
     void changeAnimateSpeed(int animateSpeed);
     void changeBuildSpeed(int buildSpeed);
     void changeFrameBuffer(int buffer);
     void setAxisTitleVisibility(bool enabled);
-    void setAxisTitleFixed(bool enabled);
     void zoomToSelectedBar();
 
 Q_SIGNALS:
-    void shadowQualityChanged(int quality);
-    void backgroundEnabledChanged(bool enabled);
     void gridEnabledChanged(bool enabled);
-    void fontChanged(QFont font);
-    void fontSizeChanged(int size);
 
 private:
 //    ifstream fin(string filename);
@@ -84,7 +68,6 @@ private:
     QCategory3DAxis *m_timeAxis;
     QCategory3DAxis *m_freqAxis;
     QBar3DSeries *m_primarySeries;
-    QBar3DSeries *m_secondarySeries;
     QAbstract3DSeries::Mesh m_barMesh;
     bool m_smooth;
     QPropertyAnimation m_animationCameraX;

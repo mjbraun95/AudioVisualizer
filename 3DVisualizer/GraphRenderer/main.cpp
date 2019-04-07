@@ -26,6 +26,8 @@ using namespace QtDataVisualization;
 
 int main(int argc, char *argv[])
 {
+    // Initialization application
+    // Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
     QApplication app(argc, argv);
     Q3DBars *widgetgraph = new Q3DBars();
     QWidget *container = QWidget::createWindowContainer(widgetgraph);
@@ -36,13 +38,11 @@ int main(int argc, char *argv[])
         msgBox.exec();
         return -1;
     }
-
     QSize screenSize = widgetgraph->screen()->size();
     container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 1.5));
     container->setMaximumSize(screenSize);
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     container->setFocusPolicy(Qt::StrongFocus);
-
     QWidget *widget = new QWidget;
     QHBoxLayout *hLayout = new QHBoxLayout(widget);
     QVBoxLayout *vLayout = new QVBoxLayout();
@@ -52,27 +52,15 @@ int main(int argc, char *argv[])
     // Set program title
     widget->setWindowTitle(QStringLiteral("3D Magnitude-Frequency-Time Visualization"));
 
-    // Smooth bar rendering option
+    // Adds camera orientation options, zoom options, bar shape options, bar select options
+    // Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
     QCheckBox *smoothCheckBox = new QCheckBox(widget);
     smoothCheckBox->setText(QStringLiteral("Smooth bars"));
     smoothCheckBox->setChecked(false);
-
-    // Bar shape options
-    QComboBox *barStyleList = new QComboBox(widget);
-    barStyleList->addItem(QStringLiteral("Bar"), int(QAbstract3DSeries::MeshBar));
-    barStyleList->addItem(QStringLiteral("Pyramid"), int(QAbstract3DSeries::MeshPyramid));
-    barStyleList->addItem(QStringLiteral("Cone"), int(QAbstract3DSeries::MeshCone));
-    barStyleList->addItem(QStringLiteral("Cylinder"), int(QAbstract3DSeries::MeshCylinder));
-    barStyleList->addItem(QStringLiteral("Bevel bar"), int(QAbstract3DSeries::MeshBevelBar));
-    barStyleList->addItem(QStringLiteral("Sphere"), int(QAbstract3DSeries::MeshSphere));
-    barStyleList->setCurrentIndex(4);
-
     QPushButton *cameraButton = new QPushButton(widget);
     cameraButton->setText(QStringLiteral("Change camera preset"));
-
     QPushButton *zoomToSelectedButton = new QPushButton(widget);
     zoomToSelectedButton->setText(QStringLiteral("Zoom to selected bar"));
-
     QComboBox *selectionModeList = new QComboBox(widget);
     selectionModeList->addItem(QStringLiteral("None"),
                                int(QAbstract3DGraph::SelectionNone));
@@ -108,15 +96,12 @@ int main(int argc, char *argv[])
                                int(QAbstract3DGraph::SelectionSlice | QAbstract3DGraph::SelectionItemAndColumn
                                    | QAbstract3DGraph::SelectionMultiSeries));
     selectionModeList->setCurrentIndex(1);
-
     QCheckBox *gridCheckBox = new QCheckBox(widget);
     gridCheckBox->setText(QStringLiteral("Show grid"));
     gridCheckBox->setChecked(true);
-
     QCheckBox *reverseValueAxisCheckBox = new QCheckBox(widget);
     reverseValueAxisCheckBox->setText(QStringLiteral("Reverse value axis"));
     reverseValueAxisCheckBox->setChecked(false);
-
     QSlider *rotationSliderX = new QSlider(Qt::Horizontal, widget);
     rotationSliderX->setTickInterval(30);
     rotationSliderX->setTickPosition(QSlider::TicksBelow);
@@ -130,7 +115,7 @@ int main(int argc, char *argv[])
     rotationSliderY->setValue(0);
     rotationSliderY->setMaximum(90);
 
-    //#### Checkboxes
+    // Initializes + sets parameters for Mode buttons
     QRadioButton *staticMode = new QRadioButton(widget);
     staticMode->setText("Static Mode");
     staticMode->setChecked(true);
@@ -139,20 +124,21 @@ int main(int argc, char *argv[])
     QRadioButton *buildMode = new QRadioButton(widget);
     buildMode->setText("Build Mode");
 
+    // Initializes + sets parameters for "Animate Speed" slider
     QSlider *refreshAnimateSpeedSlider = new QSlider(Qt::Horizontal, widget);
     refreshAnimateSpeedSlider->setTickInterval(1);
     refreshAnimateSpeedSlider->setTickPosition(QSlider::TicksBelow);
     refreshAnimateSpeedSlider->setMinimum(1);
-    refreshAnimateSpeedSlider->setValue(46);
-    refreshAnimateSpeedSlider->setMaximum(1000);
+    refreshAnimateSpeedSlider->setMaximum(500);
 
+    // Initializes + sets parameters for "Build Speed" slider
     QSlider *refreshBuildSpeedSlider = new QSlider(Qt::Horizontal, widget);
     refreshBuildSpeedSlider->setTickInterval(1);
     refreshBuildSpeedSlider->setTickPosition(QSlider::TicksBelow);
-    refreshBuildSpeedSlider->setMinimum(250);
-    refreshBuildSpeedSlider->setValue(250);
-    refreshBuildSpeedSlider->setMaximum(1000);
+    refreshBuildSpeedSlider->setMinimum(1);
+    refreshBuildSpeedSlider->setMaximum(250);
 
+    // Initializes + sets parameters for "Bar Thickness" slider
     QSlider *thicknessSlider = new QSlider(Qt::Horizontal, widget);
     thicknessSlider->setTickInterval(1);
     thicknessSlider->setTickPosition(QSlider::TicksBelow);
@@ -160,17 +146,18 @@ int main(int argc, char *argv[])
     thicknessSlider->setValue(38);
     thicknessSlider->setMaximum(40);
 
+    // Initializes + sets parameters for "Frame Buffer" slider
     QSlider *frameBufferSlider = new QSlider(Qt::Horizontal, widget);
     frameBufferSlider->setTickInterval(1);
     frameBufferSlider->setTickPosition(QSlider::TicksBelow);
-    frameBufferSlider->setMinimum(2);
-    frameBufferSlider->setValue(2);
+    frameBufferSlider->setMinimum(1);
+    frameBufferSlider->setValue(1);
     frameBufferSlider->setMaximum(500);
 
+    // Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
     QCheckBox *axisTitlesVisibleCB = new QCheckBox(widget);
     axisTitlesVisibleCB->setText(QStringLiteral("Axis titles visible"));
     axisTitlesVisibleCB->setChecked(true);
-
     QSlider *axisLabelRotationSlider = new QSlider(Qt::Horizontal, widget);
     axisLabelRotationSlider->setTickInterval(10);
     axisLabelRotationSlider->setTickPosition(QSlider::TicksBelow);
@@ -179,7 +166,7 @@ int main(int argc, char *argv[])
     axisLabelRotationSlider->setMaximum(90);
 
 
-    //#### Widgets
+    // Loads widgets into user interface
     vLayout->addWidget(new QLabel(QStringLiteral("Bar Thickness")));
     vLayout->addWidget(thicknessSlider, 1, Qt::AlignTop);
     vLayout->addWidget(new QLabel(QStringLiteral("Render Modes")));
@@ -193,8 +180,7 @@ int main(int argc, char *argv[])
     vLayout->addWidget(new QLabel(QStringLiteral("Build Speed")));
     vLayout->addWidget(refreshBuildSpeedSlider, 1, Qt::AlignTop);
 
-
-    //! [5]
+    // Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
     vLayout->addWidget(new QLabel(QStringLiteral("Rotate horizontally")));
     vLayout->addWidget(rotationSliderX, 0, Qt::AlignTop);
     vLayout->addWidget(new QLabel(QStringLiteral("Rotate vertically")));
@@ -205,8 +191,6 @@ int main(int argc, char *argv[])
     vLayout->addWidget(smoothCheckBox);
     vLayout->addWidget(reverseValueAxisCheckBox);
     vLayout->addWidget(axisTitlesVisibleCB);
-    vLayout->addWidget(new QLabel(QStringLiteral("Change bar style")));
-    vLayout->addWidget(barStyleList);
     vLayout->addWidget(new QLabel(QStringLiteral("Change selection mode")));
     vLayout->addWidget(selectionModeList);
     vLayout->addWidget(new QLabel(QStringLiteral("Axis label rotation")));
@@ -248,6 +232,8 @@ int main(int argc, char *argv[])
     QObject::connect(frameBufferSlider, &QSlider::valueChanged, modifier,
                      &GraphModifier::changeFrameBuffer);
 
+    // Connects other objects to their relevant functions
+    // Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
     QObject::connect(rotationSliderX, &QSlider::valueChanged, modifier, &GraphModifier::rotateX);
     QObject::connect(rotationSliderY, &QSlider::valueChanged, modifier, &GraphModifier::rotateY);
     QObject::connect(cameraButton, &QPushButton::clicked, modifier,
@@ -262,10 +248,6 @@ int main(int argc, char *argv[])
                      &GraphModifier::setReverseValueAxis);
     QObject::connect(modifier, &GraphModifier::gridEnabledChanged,
                      gridCheckBox, &QCheckBox::setChecked);
-    QObject::connect(barStyleList, SIGNAL(currentIndexChanged(int)), modifier,
-                     SLOT(changeStyle(int)));
-    QObject::connect(selectionModeList, SIGNAL(currentIndexChanged(int)), modifier,
-                     SLOT(changeSelectionMode(int)));
     QObject::connect(axisTitlesVisibleCB, &QCheckBox::stateChanged, modifier,
                      &GraphModifier::setAxisTitleVisibility);
     QObject::connect(axisLabelRotationSlider, &QSlider::valueChanged, modifier,

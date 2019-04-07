@@ -22,7 +22,8 @@
 #include <linux/limits.h>
 #include <unistd.h>
 
-//reference: https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
+// Gets filepath of working directory
+// Found from https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
 std::string getexepath()
 {
   char result[ PATH_MAX ];
@@ -32,8 +33,8 @@ std::string getexepath()
 
 using namespace QtDataVisualization;
 
-float tempFloats[6304][74];
-
+// Initializes GraphModifier object
+// Found and significantly modified from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 GraphModifier::GraphModifier(Q3DBars *bargraph)
     : m_graph(bargraph),
       m_xRotation(0.0f),
@@ -66,47 +67,6 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
 
     QDir::current();
 
-    // Loads FFT data from outputted txt file in "FileDecoder" folder
-    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
-    std::string line;
-    getline(fin, line);
-    timeIndexLen = std::stoi(line);
-    getline(fin, line);
-    freqIndexLen = std::stoi(line);
-
-    // Parses through "output.txt" file and converts to array
-    int at, freqIndex,timeIndex;
-    for (timeIndex=0; timeIndex<timeIndexLen; timeIndex++)
-    {
-        getline(fin, line);
-        if (line == "NEXT_TIME_INTERVAL")
-        {
-            getline(fin, line);
-            QString time = QString::fromStdString(line);
-            m_timeBuckets << time;
-        }
-        for (freqIndex=0; freqIndex<freqIndexLen; freqIndex++)
-        {
-            getline(fin, line);
-            std::string p[2];
-            at = 0;
-            for (auto c : line)
-            {
-                if (c == ':')
-                {
-                    QString temp = QString::fromStdString(p[0]);
-                    ++at;
-                }
-                else
-                {
-                    p[at] += c;
-                }
-            }
-            tempFloats[timeIndex][freqIndex] = std::stof(p[1]);
-        }
-        timeIndex += 1;
-
-    }
     //Maps frequency searches to musical notes
     m_freqBuckets << "A0" << "A#0" << "B0" << "C0" << "C#0" << "D0" << "D#0" << "E0" << "F0" << "F#0" << "G0"<< "G#0"
                   << "A1" << "A#1" << "B1" << "C1" << "C#1" << "D1" << "D#1" << "E1" << "F1" << "F#1" << "G1"<< "G#1"
@@ -125,6 +85,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_magnitudeAxis->setLabelAutoRotation(30.0f);
     m_magnitudeAxis->setTitleVisible(true);
 
+    // Labels axes
     m_timeAxis->setTitle("Time");
     m_timeAxis->setLabelAutoRotation(30.0f);
     m_timeAxis->setTitleVisible(true);
@@ -132,18 +93,23 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_freqAxis->setLabelAutoRotation(30.0f);
     m_freqAxis->setTitleVisible(true);
 
+    // Defines magnitude, time, and frequency axes on graph
     m_graph->setValueAxis(m_magnitudeAxis);
     m_graph->setRowAxis(m_timeAxis);
     m_graph->setColumnAxis(m_freqAxis);
 
+    // Formatting for selected bar info
     m_primarySeries->setItemLabelFormat(QStringLiteral("Note: @colLabel, Time: @rowLabel seconds, Magnitude: @valueLabel"));
+
     m_primarySeries->setMesh(QAbstract3DSeries::MeshBevelBar);
     m_primarySeries->setMeshSmooth(false);
 
+    // Adds series to graph
     m_graph->addSeries(m_primarySeries);
 
     changePresetCamera();
 
+    // Loads FFT data into series
     resetData();
 
     // Set up property animations for zooming to the selected bar
@@ -179,12 +145,15 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
 
 }
 
+// Deletes GraphModifier object
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 GraphModifier::~GraphModifier()
 {
     delete m_graph;
 }
 
-// Loads the FFT data to the
+// Loads FFT data from outputted txt file in "FileDecoder" folder
+// Found and significantly modified from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::resetData()
 
 {
@@ -192,13 +161,42 @@ void GraphModifier::resetData()
     QBarDataArray *dataSet = new QBarDataArray;
     QBarDataRow *dataRow;
 
-    dataSet->reserve(m_timeBuckets.size());
-    for (int time = 0; time < m_timeBuckets.size(); time++) {
+    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
+    std::string line;
+    getline(fin, line);
+    timeIndexLen = std::stoi(line);
+    getline(fin, line);
+    freqIndexLen = std::stoi(line);
+    int at;
+    dataSet->reserve(timeIndexLen);
+    for (int time = 0; time < timeIndexLen; time++) {
+        getline(fin, line);
+        if (line == "NEXT_TIME_INTERVAL")
+        {
+            getline(fin, line);
+            QString time = QString::fromStdString(line);
+            m_timeBuckets << time;
+        }
         // Create a data row
-        dataRow = new QBarDataRow(m_freqBuckets.size());
-        for (int freq = 0; freq < m_freqBuckets.size(); freq++) {
+        dataRow = new QBarDataRow(freqIndexLen);
+        for (int freq = 0; freq < freqIndexLen; freq++) {
             // Add data to the row
-            (*dataRow)[freq].setValue(tempFloats[time][freq]);
+            getline(fin, line);
+            std::string p[2];
+            at = 0;
+            for (auto c : line)
+            {
+                if (c == ':')
+                {
+                    QString temp = QString::fromStdString(p[0]);
+                    ++at;
+                }
+                else
+                {
+                    p[at] += c;
+                }
+            }
+            (*dataRow)[freq].setValue(std::stof(p[1]));
         }
         // Add the row to the set
         dataSet->append(dataRow);
@@ -208,6 +206,8 @@ void GraphModifier::resetData()
     m_primarySeries->dataProxy()->resetArray(dataSet, m_timeBuckets, m_freqBuckets);
 }
 
+// Changes time interval to view
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::changeRange(int range)
 {
     std::cout << "Changing range= " << range << std::endl;
@@ -220,16 +220,17 @@ void GraphModifier::changeRange(int range)
         m_timeAxis->setRange(range, range);
 }
 
-//#### Methods
 // Adjust spaces between bars
 QSizeF barSize(0,0);
 
-
+// Initializes objects for custom methods
 QTimer *timer = new QTimer();
 int frame = 0;
-int frameBuffer = 2;
+int frameBuffer = 1;
 int currentAnimateSpeed = 46;
 int currentBuildSpeed = 250;
+
+// Starts animation loop
 void GraphModifier::startAnimate()
 {
     changeThickness(5);
@@ -238,11 +239,13 @@ void GraphModifier::startAnimate()
     timer->start(currentAnimateSpeed);
 }
 
+// Stops animation loop
 void GraphModifier::stopAnimate()
 {
     QObject::disconnect(timer, &QTimer::timeout, this, &GraphModifier::animate);
 }
 
+// Starts build loop
 void GraphModifier::startBuild()
 {
     changeThickness(5);
@@ -250,67 +253,68 @@ void GraphModifier::startBuild()
     QObject::connect(timer, &QTimer::timeout, this, &GraphModifier::build);
     timer->start(currentBuildSpeed);
 }
+
+// Stops build loop
 void GraphModifier::stopBuild()
 {
     QObject::disconnect(timer, &QTimer::timeout, this, &GraphModifier::build);
 }
 
+// Constructs entire 3D graph statically
 void GraphModifier::staticBuild()
 {
     changeThickness(38);
     m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
 }
+
+// Animation loop
 void GraphModifier::animate()
 {
     frame += 1;
     m_timeAxis->setRange(frame, frame+frameBuffer);
 }
 
+// Build loop
 void GraphModifier::build()
 {
     frame += 1;
     m_timeAxis->setRange(0, frame+1);
 }
 
+// Changes animation speed
 void GraphModifier::changeAnimateSpeed(int animateSpeed)
 {
-    currentAnimateSpeed = animateSpeed;
+    currentAnimateSpeed = 501 - animateSpeed;
     std::cout << "animateSpeed: " << animateSpeed << std::endl;
     stopAnimate();
     startAnimate();
 }
 
+// Changes build speed
 void GraphModifier::changeBuildSpeed(int buildSpeed)
 {
-    currentBuildSpeed = buildSpeed;
+    currentBuildSpeed = 501 - buildSpeed;
     std::cout << "buildSpeed: " << buildSpeed << std::endl;
     stopBuild();
     startBuild();
 }
 
+// Changes bar thickness
 void GraphModifier::changeThickness(int thickness)
 {
     m_graph->setBarThickness(thickness);
     std::cout << "thickness: " << thickness << std::endl;
 }
 
+// Changes length of frame buffer
 void GraphModifier::changeFrameBuffer(int buffer)
 {
     frameBuffer = buffer;
     std::cout << "frameBuffer: " << frameBuffer << std::endl;
 }
 
-
-
-void GraphModifier::changeStyle(int style)
-{
-    QComboBox *comboBox = qobject_cast<QComboBox *>(sender());
-    if (comboBox) {
-        m_barMesh = QAbstract3DSeries::Mesh(comboBox->itemData(style).toInt());
-        m_primarySeries->setMesh(m_barMesh);
-    }
-}
-
+// Changes camera orientation
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::changePresetCamera()
 {
     m_animationCameraX.stop();
@@ -329,52 +333,8 @@ void GraphModifier::changePresetCamera()
         preset = Q3DCamera::CameraPresetFrontLow;
 }
 
-void GraphModifier::changeTheme(int theme)
-{
-    Q3DTheme *currentTheme = m_graph->activeTheme();
-    currentTheme->setType(Q3DTheme::Theme(theme));
-    emit backgroundEnabledChanged(currentTheme->isBackgroundEnabled());
-    emit gridEnabledChanged(currentTheme->isGridEnabled());
-    emit fontChanged(currentTheme->font());
-    emit fontSizeChanged(currentTheme->font().pointSize());
-}
-
-void GraphModifier::changeLabelBackground()
-{
-    m_graph->activeTheme()->setLabelBackgroundEnabled(!m_graph->activeTheme()->isLabelBackgroundEnabled());
-}
-
-void GraphModifier::changeSelectionMode(int selectionMode)
-{
-    QComboBox *comboBox = qobject_cast<QComboBox *>(sender());
-    if (comboBox) {
-        int flags = comboBox->itemData(selectionMode).toInt();
-        m_graph->setSelectionMode(QAbstract3DGraph::SelectionFlags(flags));
-    }
-}
-
-void GraphModifier::changeFont(const QFont &font)
-{
-    QFont newFont = font;
-    m_graph->activeTheme()->setFont(newFont);
-}
-
-void GraphModifier::changeFontSize(int fontsize)
-{
-    m_fontSize = fontsize;
-    QFont font = m_graph->activeTheme()->font();
-    font.setPointSize(m_fontSize);
-    m_graph->activeTheme()->setFont(font);
-    std::cout << "fontsize: " << m_fontSize << std::endl;
-}
-
-void GraphModifier::shadowQualityUpdatedByVisual(QAbstract3DGraph::ShadowQuality sq)
-{
-    int quality = int(sq);
-    // Updates the UI component to show correct shadow quality
-    emit shadowQualityChanged(quality);
-}
-
+// Changes axis label orientation
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::changeLabelRotation(int rotation)
 {
     m_magnitudeAxis->setLabelAutoRotation(float(rotation));
@@ -382,6 +342,8 @@ void GraphModifier::changeLabelRotation(int rotation)
     m_timeAxis->setLabelAutoRotation(float(rotation));
 }
 
+// Sets Axis title visibility
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::setAxisTitleVisibility(bool enabled)
 {
     m_magnitudeAxis->setTitleVisible(enabled);
@@ -389,13 +351,8 @@ void GraphModifier::setAxisTitleVisibility(bool enabled)
     m_timeAxis->setTitleVisible(enabled);
 }
 
-void GraphModifier::setAxisTitleFixed(bool enabled)
-{
-    m_magnitudeAxis->setTitleFixed(enabled);
-    m_freqAxis->setTitleFixed(enabled);
-    m_timeAxis->setTitleFixed(enabled);
-}
-
+// Moves camera to selected bar
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::zoomToSelectedBar()
 {
     m_animationCameraX.stop();
@@ -456,53 +413,40 @@ void GraphModifier::zoomToSelectedBar()
     m_animationCameraTarget.start();
 }
 
-void GraphModifier::changeShadowQuality(int quality)
-{
-    QAbstract3DGraph::ShadowQuality sq = QAbstract3DGraph::ShadowQuality(quality);
-    m_graph->setShadowQuality(sq);
-    emit shadowQualityChanged(quality);
-}
-
+// Rotates x-axis
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::rotateX(int rotation)
 {
     m_xRotation = rotation;
     m_graph->scene()->activeCamera()->setCameraPosition(m_xRotation, m_yRotation);
 }
 
+// Rotates y-axis
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::rotateY(int rotation)
 {
     m_yRotation = rotation;
     m_graph->scene()->activeCamera()->setCameraPosition(m_xRotation, m_yRotation);
 }
 
-void GraphModifier::setBackgroundEnabled(int enabled)
-{
-    m_graph->activeTheme()->setBackgroundEnabled(bool(enabled));
-}
-
+// Sets grid visibility
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::setGridEnabled(int enabled)
 {
     m_graph->activeTheme()->setGridEnabled(bool(enabled));
 }
 
+// Renders "smooth" bars
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::setSmoothBars(int smooth)
 {
     m_smooth = bool(smooth);
     m_primarySeries->setMeshSmooth(m_smooth);
-//    m_secondarySeries->setMeshSmooth(m_smooth);
 }
 
-void GraphModifier::setSeriesVisibility(int enabled)
-{
-//    m_secondarySeries->setVisible(bool(enabled));
-}
-
+// Flips magnitude axis
+// Found from https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 void GraphModifier::setReverseValueAxis(int enabled)
 {
     m_graph->valueAxis()->setReversed(enabled);
-}
-
-void GraphModifier::setReflection(bool enabled)
-{
-    m_graph->setReflection(enabled);
 }

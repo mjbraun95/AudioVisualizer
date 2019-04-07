@@ -11,9 +11,11 @@ Running Instructions:
     Download offline installer 
     https://www.qt.io/offline-installers
 
+
+
 References:
     3D bar graph visualization code was found and modified from:
 		https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
 
-	currentPath function:
+	getexepath() function:
 		https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
