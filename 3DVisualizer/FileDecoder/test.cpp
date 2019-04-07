@@ -4,14 +4,9 @@
 #include <fstream>
 #include "audio_file.h"
 
-int main(int argc, char *argv[]) {
-    // invalid usage
-    if (argc != 2) {
-        cout << "usage: " << argv[0] << " input_audio" << endl;
-        exit(1);
-    }
-
-    audio_file input_file(argv[1], 44100);
+int main()
+{
+    audio_file input_file("AskDNA.mp3", 44100);
     double* data;
     unsigned long size;
     input_file.decode(&data, &size);
@@ -39,8 +34,8 @@ int main(int argc, char *argv[]) {
     1046.50,1108.73,1174.66,1244.51,1396.91,1479.98,1567.98,1661.22,1760,1864.66,1975.53
     };
     vector<vector<double>> new_f_bins_collection = input_file.filter(f_bins_collection,freqVec);
-    cout << "# of time buckets: " << new_f_bins_collection.size() << endl;
-    cout << "# of frequency buckets: " << new_f_bins_collection[0].size() << endl;
+    cout << new_f_bins_collection.size() << endl;
+    cout << new_f_bins_collection[0].size() << endl;
     vector<double>::iterator thisFreq;
     // for (int i=0; i<)
 

@@ -38,7 +38,11 @@ public:
 
 public Q_SLOTS:
     void changeRange(int range);
-    void startAnimate(QTimer *timer);
+    void startAnimate();
+    void stopAnimate();
+    void startBuild();
+    void stopBuild();
+    void staticBuild();
     void animate();
     void build();
     void changeStyle(int style);

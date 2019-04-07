@@ -23,24 +23,24 @@
 #include <unistd.h>
 
 //reference: https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html
-//std::string getexepath()
-//{
-//  char result[ PATH_MAX ];
-//  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-//  return std::string( result, (count > 0) ? count : 0 );
-//}
+std::string getexepath()
+{
+  char result[ PATH_MAX ];
+  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+  return std::string( result, (count > 0) ? count : 0 );
+}
 
 using namespace QtDataVisualization;
 
-float tempFloats[10000][74];
+float tempFloats[6304][74];
 
 GraphModifier::GraphModifier(Q3DBars *bargraph)
     : m_graph(bargraph),
       m_xRotation(0.0f),
       m_yRotation(0.0f),
       m_fontSize(1),
-      m_segments(2),
-      m_subSegments(2),
+      m_segments(4),
+      m_subSegments(3),
       m_minval(0.0f),
       m_maxval(200.0f),
       m_magnitudeAxis(new QValue3DAxis),
@@ -50,18 +50,17 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
       m_barMesh(QAbstract3DSeries::MeshBevelBar),
       m_smooth(false)
 {
-    m_graph->setShadowQuality(QAbstract3DGraph::ShadowQualitySoftMedium);
+    m_graph->setShadowQuality(QAbstract3DGraph::ShadowQualitySoftLow);
     m_graph->activeTheme()->setBackgroundEnabled(false);
-    m_graph->activeTheme()->setFont(QFont("Times New Roman", m_fontSize));
+    m_graph->activeTheme()->setFont(QFont("Liberation Sans Narrow", m_fontSize));
     m_graph->activeTheme()->setLabelBackgroundEnabled(true);
     m_graph->setMultiSeriesUniform(true);
+    m_magnitudeAxis->setTitleFixed(false);
+    m_freqAxis->setTitleFixed(false);
+    m_timeAxis->setTitleFixed(false);
 
-    // Adjust spaces between bars
-    QSizeF barSize(0,0);
-    m_graph->setBarSpacing(barSize);
-    m_graph->setBarThickness(10);
     QDir::current();
-    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Project 2/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
+    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
     std::string line;
     getline(fin, line);
     timeIndexLen = std::stoi(line);
@@ -111,8 +110,8 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
                   << "A5" << "A#5" << "B5" << "C5" << "C#5" << "D5" << "D#5" << "E5" << "F5" << "F#5" << "G5"<< "G#5"
                   << "A6" << "A#6" << "B6" << "C6" << "C#6" << "D6" << "D#6" << "E6" << "F6" << "F#6" << "G6"<< "G#6";
 
-
     m_magnitudeAxis->setTitle("Magnitude");
+    std::cout << "getexepath(): " << getexepath() << std::endl;
     m_magnitudeAxis->setSegmentCount(m_segments);
     m_magnitudeAxis->setSubSegmentCount(m_subSegments);
     m_magnitudeAxis->setRange(m_minval, m_maxval);
@@ -131,7 +130,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_graph->setRowAxis(m_timeAxis);
     m_graph->setColumnAxis(m_freqAxis);
 
-    m_primarySeries->setItemLabelFormat(QStringLiteral("Volume of @colLabel note at @rowLabel seconds: @valueLabel"));
+    m_primarySeries->setItemLabelFormat(QStringLiteral("Oulu - @colLabel @rowLabel: @valueLabel"));
     m_primarySeries->setMesh(QAbstract3DSeries::MeshBevelBar);
     m_primarySeries->setMeshSmooth(false);
 
@@ -171,9 +170,7 @@ GraphModifier::GraphModifier(Q3DBars *bargraph)
     m_animationCameraZoom.setKeyValueAt(zoomOutFraction, QVariant::fromValue(50.0f));
     m_animationCameraTarget.setKeyValueAt(zoomOutFraction,
                                           QVariant::fromValue(QVector3D(0.0f, 0.0f, 0.0f)));
-    float tempFloats[m_timeBuckets.count()][m_freqBuckets.count()];
-    std::cout << "timebuckets.count: " << m_timeBuckets.count() << std::endl;
-    std::cout << "timebuckets.count: " << m_freqBuckets.count() << std::endl;
+
 }
 
 GraphModifier::~GraphModifier()
@@ -208,38 +205,71 @@ void GraphModifier::resetTemperatureData()
 
 void GraphModifier::changeRange(int range)
 {
+    std::cout << "Changing range= " << range << std::endl;
     if (range >= m_timeBuckets.count())
     {
+        std::cout << "timebuckets.count: " << m_timeBuckets.count() << std::endl;
         m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
     }
     else
         m_timeAxis->setRange(range, range);
 }
 
+//#### Methods
+// Adjust spaces between bars
+QSizeF barSize(0,0);
 
 
-//####mymethods
-void GraphModifier::startAnimate(QTimer *timer)
+QTimer *timer = new QTimer();
+int frame = 0;
+void GraphModifier::startAnimate()
 {
-    timer->start(46);
+    m_graph->setBarSpacing(barSize);
+    m_graph->setBarThickness(5);
+    frame = 0;
+    QObject::connect(timer, &QTimer::timeout, this, &GraphModifier::animate);
+    timer->start(1);
 }
 
-int frame = 0;
+void GraphModifier::stopAnimate()
+{
+    QObject::disconnect(timer, &QTimer::timeout, this, &GraphModifier::animate);
+}
+
+void GraphModifier::startBuild()
+{
+    m_graph->setBarSpacing(barSize);
+    m_graph->setBarThickness(5);
+    frame = 0;
+    QObject::connect(timer, &QTimer::timeout, this, &GraphModifier::build);
+    timer->start(1);
+}
+void GraphModifier::stopBuild()
+{
+    QObject::disconnect(timer, &QTimer::timeout, this, &GraphModifier::build);
+}
+
+void GraphModifier::staticBuild()
+{
+    m_graph->setBarSpacing(barSize);
+    m_graph->setBarThickness(40);
+    m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
+}
+
 void GraphModifier::animate()
 {
-    if (frame >=m_timeBuckets.count())
-        frame=0;
     frame += 1;
     m_timeAxis->setRange(frame, frame+1);
 }
 
 void GraphModifier::build()
 {
-    if (frame >=m_timeBuckets.count())
-        frame=0;
     frame += 1;
     m_timeAxis->setRange(0, frame+1);
 }
+
+
+
 
 void GraphModifier::changeStyle(int style)
 {
