@@ -1,16 +1,48 @@
+NOTES:
+    The 3D Visualizer is only supported on 64-bit Ubuntu 16.04, and it will not work on the cmput274 virtual disk.
+    If you are running from a VM, make sure 3D Acceleration is enabled, and enough processing power + memory is allocated, as this is a fairly demanding program.
+
 Running Instructions:
-    1. Download Qt
-    https://www.qt.io/download-thank-you?os=linux
-    2. Right click the qt-unified-linux-x64-3.0.6-online.run installer and go to:
-    - Properties
-    - Permissions
-    and make sure "Allow executing file as program" is checked.
+    1. Download Qt 5.12.2 from the link below (1.4GB)
+	download.qt.io/official_releases/qt/5.12/5.12.2/qt-opensource-linux-x64-5.12.2.run
 
-    OR
+    2. Navigate to your "home/opt" directory, open a terminal here and type the command:
+	sudo mkdir Qt
 
-    Download offline installer 
-    https://www.qt.io/offline-installers
+    3. Open a terminal in the directory which you donwloaded the .run file, and type the following commands:
+	$ chmod +x qt-opensource-linux-x64-5.12.2.run
+	$ ./qt-opensource-linux-x64-5.12.2.run
 
+    3. An installer will pop up. Click:
+	Next
+	Skip
+	Next
+    
+    4. When asked to specify the directory where Qt 5.12.2 will be installed, browse to the "home/opt/Qt" directory you created in step 2. Click "Next".
+
+    5. Make sure Qt 5.12.2 is checked under components you want to install. Click "Next".
+
+    6. Select "I have read and agree to the terms contained in the license agreements" and click "Next" to continue. Finally, press "Install" to begin the installation process (~5GB)
+
+    7. When the installation is finished, start Qt, and navigate to Welcome->Projects->Open Project
+
+    8. From here, you want to navigate into the project submission directory, into 3DVisualizer->GraphRenderer->Graphs.pro
+
+    9. If a pop-up window appears, press "Ok", then "Configure"
+
+    10. Now, within the 3DVisualizer directory, navigate to the "FileDecoder" folder, and install the required dependencies found in that directory.
+
+    11. Once you have done that, open a terminal from within the "FileDecoder" directory and type the following commands:
+	$ make
+	$ ./test [chooseanymp3file.mp3]
+    to calculate the magnitude-frequency-time data and output it to a text file "output.txt"
+
+    12. Finally, moving back to the Qt IDE, right-click on the "Graphs" project and click run
+	
+    13. Once, the program has loaded (it may take a minute), right click+hold+move the mouse around to move the camera.
+	"Animation Mode" will render the graph data over time. Adjust the "Buffer Length" slider to get a moving 3D rendering of the data. Speed can also be modified using the "Animate Speed" slider.
+	"Build Mode" will render from the beginning of the data, and build the rest of the graph data from there. Speed can also be modified using the "Build Speed" slider.
+	"Static Mode" simply renders the entire 3D graph in a static form.
 
 
 References:

@@ -4,9 +4,14 @@
 #include <fstream>
 #include "audio_file.h"
 
-int main()
-{
-    audio_file input_file("AskDNA.mp3", 44100);
+int main(int argc, char *argv[]) {
+    // invalid usage
+    if (argc != 2) {
+        cout << "usage: " << argv[0] << " input_audio" << endl;
+        exit(1);
+    }
+
+    audio_file input_file(argv[1], 44100);
     double* data;
     unsigned long size;
     input_file.decode(&data, &size);

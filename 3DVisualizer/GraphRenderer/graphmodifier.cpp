@@ -160,8 +160,16 @@ void GraphModifier::resetData()
     // Create data arrays
     QBarDataArray *dataSet = new QBarDataArray;
     QBarDataRow *dataRow;
+    std::string directory = getexepath();
+    for (int i=0; i<54; i++)
+    {
+        directory.pop_back();
+    }
+    directory = directory + "/FileDecoder/output.txt";
 
-    std::ifstream fin("/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt");
+    std::cout << directory << std::endl;
+    //"/home/matt/Desktop/Link to Courses/CMPUT 275/Assignments/Final Proj 3/CMPUT275_Final_Project/3DVisualizer/FileDecoder/output.txt"
+    std::ifstream fin(directory);
     std::string line;
     getline(fin, line);
     timeIndexLen = std::stoi(line);
@@ -264,7 +272,7 @@ void GraphModifier::stopBuild()
 void GraphModifier::staticBuild()
 {
     changeThickness(38);
-    m_timeAxis->setRange(0, m_timeBuckets.count() - 1);
+    m_timeAxis->setRange(0, m_timeBuckets.count()-1);
 }
 
 // Animation loop
