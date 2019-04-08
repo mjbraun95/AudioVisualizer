@@ -1,18 +1,18 @@
 CC=g++
 CFLAGS=-c -Wall -O2 -std=c++11
 LFLAGS= -lavcodec-ffmpeg -lavformat-ffmpeg -lavutil -lswresample
-PROGS= test
-OBJS= test.o
+PROGS= main
+OBJS= main.o
 
 # executable targets
-all: test
+all: main
 
-test: test.o
-	$(CC) test.o -o test $(LFLAGS)
+main: main.o
+	$(CC) main.o -o main $(LFLAGS)
 
 # object targets
-test.o: test.cpp audio_file.h FFT.h
-	$(CC) test.cpp -o test.o $(CFLAGS)
+main.o: main.cpp audio_file.h FFT.h
+	$(CC) main.cpp -o main.o $(CFLAGS)
 
 clean:
-	@rm $(OBJS) $(PROGS)
+	@rm $(OBJS) $(PROGS) output.txt
