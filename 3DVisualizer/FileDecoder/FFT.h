@@ -40,7 +40,7 @@ public:
     }
 
     // multiplication;
-    // Multiply through the brackets (i.e., FOIL) and collect like terms
+    // Multiply through the brackets (i.e. FOIL) and collect like terms
     complex operator*(const complex& num) {
         // (a + bi) * (c + di) = (ac - bd) + (ad + bc)i
         return complex(complexPair.first * num.complexPair.first 

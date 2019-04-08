@@ -1,0 +1,151 @@
+Names:  Ang Li  Matthew Braun
+IDs:    1550746 1497171
+CMPUT 275, Winter 2019
+
+Project: audio visualizer
+
+Included Files:
+    *README
+
+    2DVisualizer
+        *Makefile
+        *main.cpp
+        *audio_file.h
+        *FFT.h
+        *Fairfax.mp3 (for test)
+
+    3DVisualizer
+        FileDecoder
+            *Makefile
+            *main.cpp
+            *stream.cpp
+            *audio_file.h
+            *FFT.h
+            *Fairfax.mp3 (for test)
+        GraphRenderer
+            *main.cpp
+            *mainwindow.h
+            *mainwindow.cpp
+            *mainwindow.ui
+            *graphmodifier.h
+            *graphmodifier.cpp
+            *Graphs.pro
+            *Graphs.pro.user
+            *compile_commands.json
+            *qml.qml
+
+2DVisualizer target:
+    - make: Builds the project.
+    - make main: Links all object files.
+    - make main.o: Compile the relevant object.
+    - make clean: Removes all object files and executables.
+
+3DVisualizer target:
+    - make: Builds the project.
+    - make main: Links all object files.
+    - make main.o: Compile the relevant object.
+    - make clean: Removes all object files and executables.
+
+Required installation:
+    libavcodec (for audio file decode):
+        $sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev
+
+    SDL 2.0 (for 2D data visualization):
+        $sudo apt-get install libsdl2-2.0
+
+    QT (for 3D data visualization):
+        see the running instructions
+
+Running Instructions:
+    2DVisualizer
+        1.In the directory containing all uncompressed files,
+            open the terminal and enter
+                $make
+            to compile the code.
+            Then enter
+                $./main AUDIO_FILE_NAME
+            to run the program, where AUDIO_FILE_NAME is the name of the audio file to be analyzed.
+            (e.g. $./main Fairfax.mp3)
+
+        2.The program would analyze the audio file and ask you to input "S" to view the results.
+
+        3.It would draw the real time plot demonstrate changes in magnitudes of each frequency over time.
+            X axis represents the frequencies from 1 Hz to 22050 Hz.
+            Y axis represents its corresponding magnitude.
+            (notice that the -y axis is the mirror image of the +y axis)
+
+        4.It would also track the beat (e.g. a snare drum sound).
+            An orange dot would flash in the bottom right of the plot when it assume a beat occurred
+
+    3DVisualizer:
+        1. Download Qt 5.12.2 from the link below (1.4GB)
+            download.qt.io/official_releases/qt/5.12/5.12.2/qt-opensource-linux-x64-5.12.2.run
+
+        2. Navigate to your "home/opt" directory,
+            open a terminal here and type the command:
+                $sudo mkdir Qt
+
+        3. Open a terminal in the directory which you downloaded the .run file,
+            and type the following commands:
+                $chmod +x qt-opensource-linux-x64-5.12.2.run
+                $./qt-opensource-linux-x64-5.12.2.run
+
+        4. An installer would pop up, click:
+            Next
+            Skip
+            Next
+    
+        5. When asked to specify the directory where Qt 5.12.2 would be installed,
+            browse to the "home/opt/Qt" directory you created in step 2. Click "Next".
+
+        6. Make sure Qt 5.12.2 is checked under components you want to install. Click "Next".
+
+        7. Select "I have read and agree to the terms contained in the license agreements" and click "Next" to continue.
+            Finally, press "Install" to begin the installation process (~5GB)
+
+        8. When the installation is finished, start Qt, and navigate to Welcome->Projects->Open Project
+
+        9. From here, you want to navigate into the project submission directory,
+            into 3DVisualizer->GraphRenderer->Graphs.pro
+
+        10. If a pop-up window appears, press "OK", then "Configure"
+
+        11. Now, within the 3DVisualizer directory, navigate to the "FileDecoder" folder,
+            and install the required dependencies found in that directory.
+
+        12. Once you have done that, open a terminal from within the "FileDecoder" directory and type the following commands:
+            $ make
+            $ ./main AUDIO_FILE_NAME
+            to calculate the magnitude-frequency-time data and output it to a text file "output.txt"
+
+        13. Finally, moving back to the Qt IDE, right-click on the "Graphs" project and click run
+    
+        14. Once, the program has loaded (it may take a minute),
+            right click+hold+move the mouse around to move the camera.
+            "Animation Mode" would render the graph data over time.
+                Adjust the "Buffer Length" slider to get a moving 3D rendering of the data.
+                Speed can also be modified using the "Animate Speed" slider.
+            "Build Mode" would render from the beginning of the data,
+                and build the rest of the graph data from there.
+                Speed can also be modified using the "Build Speed" slider.
+            "Static Mode" simply renders the entire 3D graph in a static form.
+
+Notes and Assumptions:
+    Makes sure your sound card is enabled before executing the script
+    For Ubuntu running in VMware:
+        In task-bar:
+            VM --> Settings --> Add --> Sound Card
+
+    The beat track function may not work precisely.
+
+    The 3DVisualizer is only supported on 64-bit Ubuntu 16.04, and it would not work on the CMPUT-274 virtual disk.
+    If you are running from a VM, make sure 3D Acceleration is enabled,
+        and enough processing power & memory is allocated,
+        as this is a fairly demanding program.
+
+References:
+    3D bar graph visualization code was found and modified from:
+        https://doc.qt.io/qt-5/qtdatavisualization-bars-example.html
+
+    getexepath() function:
+        https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html

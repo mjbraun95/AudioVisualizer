@@ -12,6 +12,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include <unordered_set>
+#include <utility>
 
 #include "FFT.h"
 
@@ -25,14 +27,14 @@ extern "C" {
 using namespace std;
 
 /*  
-    audio file decoder & transfer
+    audio file decoder & transfer & analyzer
     decode part build upon the Libavcodec tutorials retrieved from
         https://rodic.fr/blog/libavcodec-tutorial-decode-audio-file/
         dranger.com/ffmpeg/tutorial01.html
 
     decode & re-sample the audio file into time domain (amplitude vs. time)
     with the specified sample rate & mono channel
-    then transform it into frequency domain
+    then transform it into frequency domain & process the data
     
     required libraries:
         $sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev
@@ -53,19 +55,33 @@ public:
     // size: size of the data array
     void decode(double** data, unsigned long* size);
 
-    // transform the data to frequency domain
+    // transform the data into frequency domain
     // return the two dimensional vector containing the transformed frequency bins
     //
     // to access the frequency bins at time t: f_bins_collection[t / time unit]
     // to access i'th frequency bin (index i) at time t: f_bins_collection[t / time unit][i]
     vector<vector<double>> f_domain(double** data, unsigned long* size);
 
+    /* 
+        beat detect algorithm retrieved from:
+            https://www.parallelcube.com/2018/03/30/beat-detection-algorithm/
+
+        analyze the energy distributed in the investigated frequency band
+        to determine the appearance of the beat
+
+        f_bins_collection: the FFT frequency bins collection
+        band_min: lower bound of the investigated frequency band
+        band_max: upper bound of the investigated frequency band
+        return the time when the beat appears (in 10 ^ -2 s)
+    */
+    unordered_set<int> beat_detector(vector<vector<double>> &f_bins_collection, int band_min, int band_max);
+
     // extract the behavior of certain frequencies
     //
-    // f_bins_collection: the transformed frequency bins collection
+    // f_bins_collection: the FFT frequency bins collection
     // frequencies: the frequencies to be investigated
     // return the frequency bins collection representing required frequencies
-    vector<vector<double>> filter(vector<vector<double>> &f_bins_collection, vector<double> &frequencies);
+    vector<vector<double>> filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies);
 
     // return the time unit
     // which is determined by the # of frequency bins collected in a time period
@@ -94,7 +110,7 @@ void audio_file::decode(double** data, unsigned long* size) {
     // register all available file formats & codecs
     av_register_all();
 
-    // read the auto file header & store info about its file format
+    // read the audio file header & store the info about its file format
     AVFormatContext* formatCtx = avformat_alloc_context();
     if (avformat_open_input(&formatCtx, file_name, NULL, NULL) != 0) {
         cout << "Failed to open the file" << endl;
@@ -259,7 +275,7 @@ vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) 
             f_bins_collection[i][k] = iter.abs();
 
             k += 1;
-            // the useful index range for frequency is from 1 to N/2
+            // the useful index range for frequency bins is from 1 to N/2
             if (k > FFT_size / 2 - 1) {
                 break;
             }
@@ -270,7 +286,58 @@ vector<vector<double>> audio_file::f_domain(double** data, unsigned long* size) 
     return f_bins_collection;
 }
 
-vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collection, vector<double> &frequencies) {
+unordered_set<int> audio_file::beat_detector(vector<vector<double>> &f_bins_collection,
+    int band_min, int band_max) {
+    cout << "Detecting beats..." << endl;
+
+    // store the time when the beat appears
+    unordered_set<int> beat_appearance;
+    // energy distributed in the investigated frequency band per time unit
+    vector<double> energy;
+
+    // band_max * FFT_size / sample_rate: index of the maximum frequency in the frequency bins
+    // band_min * FFT_size / sample_rate: index of the minimum frequency in the frequency bins
+    int index_num = (band_max * FFT_size / sample_rate) - (band_min * FFT_size / sample_rate);
+
+    // total energy distributed in the investigated frequency band
+    double totalE = 0;
+    for (int i = 0; i < f_bins_collection.size(); i++) {
+        double f_magnitude_sum = 0;
+        // get the energy distributed in certain frequency
+        for (int j = band_min * FFT_size / sample_rate; j < band_max * FFT_size / sample_rate; j++) {
+            f_magnitude_sum += f_bins_collection[i][j];
+        }
+
+        energy.push_back(f_magnitude_sum / index_num);
+        totalE += (f_magnitude_sum / index_num);
+    }
+
+    // avenge energy distributed in the investigated frequency band per time unit
+    totalE = totalE / f_bins_collection.size();
+
+    // compute the variance & threshold
+    double variance = 0;
+    for (int i = 0; i < f_bins_collection.size(); i++) {
+        variance += pow(energy[i] - totalE, 2);
+    }
+    variance = variance / f_bins_collection.size();
+
+    // formula retrieved from:
+    //      http://mziccard.me/2015/05/28/beats-detection-algorithms-1/
+    double threshold = -0.0000015 * variance / f_bins_collection.size() + 1.5142857;
+
+    // find the qualified beats & get the time they appear
+    for (int i = 0; i < energy.size(); i++) {
+        if (energy[i] > threshold * totalE) {
+            beat_appearance.insert(i * time_unit * 10); // round to 0.1 s
+        }
+    }
+
+    cout << "Done!" << endl;
+    return beat_appearance;
+}
+
+vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies) {
     cout << "Extracting the behavior of required frequencies..." << endl;
     // store the frequency bins collection representing required frequencies
     vector<vector<double>> f_behavior(f_bins_collection.size(), vector<double> (frequencies.size(), 0));
@@ -278,7 +345,7 @@ vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collect
         for (int j = 0; j < frequencies.size(); j++) {
             // the i'th bin in the FFT results representing the behavior of the frequency Fs where
             // i * sample_rate / FFT_size = Fs
-            f_behavior[i][j] = f_bins_collection[i][(int) (frequencies[j] * FFT_size / sample_rate)];
+            f_behavior[i][j] = f_bins_collection[i][frequencies[j] * FFT_size / sample_rate];
         }
     }
 
