@@ -30,11 +30,11 @@ Running Instructions:
 
     9. If a pop-up window appears, press "Ok", then "Configure"
 
-    10. Now, within the 3DVisualizer directory, navigate to the "FileDecoder" folder, and install the required dependencies found in that directory.
+    10. Now, within the 3DVisualizer directory, navigate to the "FileDecoder" folder, and install the required dependencies found in that directory in the "Note" file.
 
     11. Once you have done that, open a terminal from within the "FileDecoder" directory and type the following commands:
 	$ make
-	$ ./test [chooseanymp3file.mp3]
+	$ ./main [chooseanymp3file.mp3]
     to calculate the magnitude-frequency-time data and output it to a text file "output.txt"
 
     12. Finally, moving back to the Qt IDE, right-click on the "Graphs" project and click run
