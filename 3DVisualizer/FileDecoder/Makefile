@@ -15,4 +15,4 @@ main.o: main.cpp audio_file.h FFT.h
 	$(CC) main.cpp -o main.o $(CFLAGS)
 
 clean:
-	@rm $(OBJS) $(PROGS) output.txt
+	@rm $(OBJS) $(PROGS)

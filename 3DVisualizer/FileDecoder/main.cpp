@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     };
 
     // extract the behavior of certain frequencies
-    vector<vector<double>> new_f_bins_collection = input_file.filter(f_bins_collection,freqVec);
+    vector<vector<double>> new_f_bins_collection = input_file.filter(f_bins_collection, freqVec);
     vector<double>::iterator thisFreq;
 
     // write the data into output.txt
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     output << new_f_bins_collection.size() << "\n" << new_f_bins_collection[0].size() << "\n";
     for (timeIndex = 0; timeIndex < new_f_bins_collection.size(); timeIndex += 1)
     {
-        output << "NEXT_TIME_INTERVAL\n" << (timeIndex * N / sample_rate) << "\n";
+        output << "NEXT_TIME_INTERVAL\n" << (timeIndex * 2048 / sample_rate) << "\n";
         freqIndex = 0;
         thisFreq = freqVec.begin();
         for (auto iter : new_f_bins_collection[timeIndex]) {

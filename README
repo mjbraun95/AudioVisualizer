@@ -18,7 +18,6 @@ Included Files:
         FileDecoder
             *Makefile
             *main.cpp
-            *stream.cpp
             *audio_file.h
             *FFT.h
             *Fairfax.mp3 (for test)
@@ -121,13 +120,15 @@ Running Instructions:
         13. Finally, moving back to the Qt IDE, right-click on the "Graphs" project and click run
     
         14. Once, the program has loaded (it may take a minute),
-            right click+hold+move the mouse around to move the camera.
+            right click & hold & move the mouse around to move the camera.
             "Animation Mode" would render the graph data over time.
-                Adjust the "Buffer Length" slider to get a moving 3D rendering of the data.
-                Speed can also be modified using the "Animate Speed" slider.
+            Adjust the "Buffer Length" slider to get a moving 3D rendering of the data.
+            Speed can also be modified using the "Animate Speed" slider.
+
             "Build Mode" would render from the beginning of the data,
-                and build the rest of the graph data from there.
-                Speed can also be modified using the "Build Speed" slider.
+            and build the rest of the graph data from there.
+            Speed can also be modified using the "Build Speed" slider.
+            
             "Static Mode" simply renders the entire 3D graph in a static form.
 
 Notes and Assumptions:

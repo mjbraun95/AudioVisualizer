@@ -81,7 +81,7 @@ public:
     // f_bins_collection: the FFT frequency bins collection
     // frequencies: the frequencies to be investigated
     // return the frequency bins collection representing required frequencies
-    vector<vector<double>> filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies);
+    vector<vector<double>> filter(vector<vector<double>> &f_bins_collection, vector<double> &frequencies);
 
     // return the time unit
     // which is determined by the # of frequency bins collected in a time period
@@ -337,7 +337,7 @@ unordered_set<int> audio_file::beat_detector(vector<vector<double>> &f_bins_coll
     return beat_appearance;
 }
 
-vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collection, vector<int> &frequencies) {
+vector<vector<double>> audio_file::filter(vector<vector<double>> &f_bins_collection, vector<double> &frequencies) {
     cout << "Extracting the behavior of required frequencies..." << endl;
     // store the frequency bins collection representing required frequencies
     vector<vector<double>> f_behavior(f_bins_collection.size(), vector<double> (frequencies.size(), 0));
